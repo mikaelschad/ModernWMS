@@ -1,0 +1,6 @@
+Main pain points in current WMS.
+
+1. Most of the UI is English only
+2. Invoicing methods should allow for more flexibility
+3. It's too easy for an end user to make mistakes. Sometimes those mistakes are irreversible.
+4. There should be more configurable restrictions depending on the customer or the facility.

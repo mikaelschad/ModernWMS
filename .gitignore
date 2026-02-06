@@ -1,0 +1,31 @@
+# node_modules
+node_modules/
+frontend/node_modules/
+
+# .NET
+bin/
+obj/
+backend/bin/
+backend/obj/
+
+# Logs
+*.log
+all_files.txt
+
+# Local settings
+appsettings.Development.json
+*.user
+
+# Build output
+dist/
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sln
+*.csproj.user
