@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import GlassCard from './GlassCard';
 import './OrderEntry.css';
 
 const OrderEntry = () => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         customerId: '',
         orderNumber: '',
@@ -17,29 +19,29 @@ const OrderEntry = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Submitting Order:', formData);
-        alert('Order Submitted Successfully!');
+        alert(t('success_created', { item: t('order_number') }));
     };
 
     return (
-        <GlassCard title="New Order Entry" className="order-entry-card">
+        <GlassCard title={t('new_order_entry')} className="order-entry-card">
             <form onSubmit={handleSubmit} className="order-entry-form">
                 <div className="form-group-row">
                     <div className="form-group">
-                        <label>Customer ID</label>
+                        <label>{t('customer_id')}</label>
                         <input
                             type="text"
                             name="customerId"
-                            placeholder="e.g. CUST-01"
+                            placeholder={t('eg_cust_01') || "e.g. CUST-01"}
                             value={formData.customerId}
                             onChange={handleChange}
                         />
                     </div>
                     <div className="form-group">
-                        <label>Order Number</label>
+                        <label>{t('order_number')}</label>
                         <input
                             type="text"
                             name="orderNumber"
-                            placeholder="e.g. ORD-10023"
+                            placeholder={t('eg_ord_10023') || "e.g. ORD-10023"}
                             value={formData.orderNumber}
                             onChange={handleChange}
                         />
@@ -47,21 +49,21 @@ const OrderEntry = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Item SKU</label>
+                    <label>{t('item_sku')}</label>
                     <div className="sku-search-group">
                         <input
                             type="text"
                             name="sku"
-                            placeholder="Search or scan SKU..."
+                            placeholder={t('search_scan_sku')}
                             value={formData.sku}
                             onChange={handleChange}
                         />
-                        <button type="button" className="scan-btn">Scan</button>
+                        <button type="button" className="scan-btn">{t('scan')}</button>
                     </div>
                 </div>
 
                 <div className="form-group">
-                    <label>Quantity</label>
+                    <label>{t('quantity')}</label>
                     <input
                         type="number"
                         name="quantity"
@@ -73,11 +75,11 @@ const OrderEntry = () => {
 
                 <div className="ai-insight">
                     <span className="ai-icon">✨</span>
-                    <p>AI Insight: High demand SKU. Recommended stock level: 250 units.</p>
+                    <p>{t('ai_insight_high_demand', { recommended: 250 })}</p>
                 </div>
 
                 <button type="submit" className="submit-btn">
-                    Create Transaction
+                    {t('create_transaction')}
                 </button>
             </form>
         </GlassCard>

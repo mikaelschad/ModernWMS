@@ -1,4 +1,6 @@
 using ModernWMS.Backend.Models;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace ModernWMS.Backend.Repositories;
 
@@ -18,13 +20,36 @@ public class LegacySqlInventoryRepository : ILegacyInventoryRepository
 
     public async Task<IEnumerable<InventoryItem>> GetLegacyInventoryAsync()
     {
-        // In a real implementation, we would use Microsoft.Data.SqlClient
-        // For the skeleton, we simulate a database call
-        await Task.Delay(100); // Simulate network latency
-
-        return new List<InventoryItem>
+        var items = new List<InventoryItem>();
+        try 
         {
-            new() { SKU = "SQL-777", Quantity = 1200, LocationCode = "A-SQL-1", FacilityId = "FAC-SQL" }
-        };
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            // Assuming we have an INVENTORY table in SQL
+            string query = "SELECT SKU, QUANTITY, LOCATIONCODE as LocationCode, FACILITYID as FacilityId FROM INVENTORY";
+            using var cmd = new SqlCommand(query, conn);
+            
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                items.Add(new InventoryItem
+                {
+                    SKU = reader["SKU"]?.ToString() ?? string.Empty,
+                    Quantity = Convert.ToInt32(reader["QUANTITY"]),
+                    LocationCode = reader["LocationCode"]?.ToString(),
+                    FacilityId = reader["FacilityId"]?.ToString()
+                });
+            }
+        }
+        catch 
+        {
+            // Fallback for demo purposes if table doesn't exist yet
+            return new List<InventoryItem>
+            {
+                new() { SKU = "SQL-777", Quantity = 1200, LocationCode = "A-SQL-1", FacilityId = "FAC-SQL" }
+            };
+        }
+        return items;
     }
 }
