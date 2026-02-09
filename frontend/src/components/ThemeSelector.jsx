@@ -1,6 +1,7 @@
+// ThemeSelector.jsx
 import { useTheme } from '../contexts/ThemeContext'
 import { useTranslation } from 'react-i18next'
-import './ThemeSelector.css'
+import './NavDropdowns.css'
 
 export default function ThemeSelector() {
     const { theme, setTheme } = useTheme()
@@ -14,16 +15,18 @@ export default function ThemeSelector() {
 
     return (
         <div className="theme-selector">
-            {themes.map(({ id, label, icon }) => (
-                <button
-                    key={id}
-                    onClick={() => setTheme(id)}
-                    className={`theme-btn ${theme === id ? 'active' : ''}`}
-                    title={label}
-                >
-                    <span className="theme-icon">{icon}</span>
-                </button>
-            ))}
+            <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                className="nav-dropdown"
+                title={t('select_theme', 'Select Theme')}
+            >
+                {themes.map(({ id, label, icon }) => (
+                    <option key={id} value={id}>
+                        {icon} {label}
+                    </option>
+                ))}
+            </select>
         </div>
     )
 }

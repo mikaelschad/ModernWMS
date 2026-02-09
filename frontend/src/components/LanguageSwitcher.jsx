@@ -1,5 +1,7 @@
+// LanguageSwitcher.jsx
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import './NavDropdowns.css';
 
 const LanguageSwitcher = () => {
     const { i18n, t } = useTranslation();
@@ -9,34 +11,15 @@ const LanguageSwitcher = () => {
     };
 
     return (
-        <div className="language-switcher" style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-                onClick={() => changeLanguage('en')}
-                style={{
-                    fontWeight: i18n.language === 'en' ? 'bold' : 'normal',
-                    opacity: i18n.language === 'en' ? 1 : 0.7,
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text)',
-                    cursor: 'pointer'
-                }}
+        <div className="language-switcher">
+            <select
+                value={i18n.language.split('-')[0]}
+                onChange={(e) => changeLanguage(e.target.value)}
+                className="nav-dropdown"
             >
-                EN
-            </button>
-            <span style={{ color: 'var(--text-muted)' }}>|</span>
-            <button
-                onClick={() => changeLanguage('es')}
-                style={{
-                    fontWeight: i18n.language === 'es' ? 'bold' : 'normal',
-                    opacity: i18n.language === 'es' ? 1 : 0.7,
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text)',
-                    cursor: 'pointer'
-                }}
-            >
-                ES
-            </button>
+                <option value="en">🇺🇸 {t('english')}</option>
+                <option value="es">🇪🇸 {t('spanish')}</option>
+            </select>
         </div>
     );
 };

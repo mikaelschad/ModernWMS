@@ -60,6 +60,8 @@ i18n
                     consignees: "Consignees",
                     facility: "Facility",
                     facilities: "Facilities",
+                    select_customer: "Select Customer",
+                    select_item_group: "Select Item Group",
                     aliases: "Aliases",
                     storage: "Storage",
                     substitutes: "Substitutes",
@@ -203,7 +205,8 @@ i18n
                     active_orders: "Active Orders",
                     pending_receiving: "Pending Receiving",
                     inventory_distribution: "Inventory Distribution",
-                    quantity: "Quantity"
+                    quantity: "Quantity",
+                    select_theme: "Select Theme"
                 }
             },
             es: {
@@ -250,6 +253,8 @@ i18n
                     facility: "Instalación",
                     facilities: "Instalaciones",
                     plate: "Placa",
+                    select_customer: "Seleccionar Cliente",
+                    select_item_group: "Seleccionar Grupo",
                     aliases: "Alias",
                     storage: "Almacenamiento",
                     substitutes: "Sustitutos",
@@ -393,7 +398,8 @@ i18n
                     active_orders: "Pedidos Activos",
                     pending_receiving: "Recepción Pendiente",
                     inventory_distribution: "Distribución de Inventario",
-                    quantity: "Cantidad"
+                    quantity: "Cantidad",
+                    select_theme: "Seleccionar Tema"
                 }
             }
         }
