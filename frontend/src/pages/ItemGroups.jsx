@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import GlassCard from '../components/GlassCard'
+import EntitySelector from '../components/EntitySelector'
 import '../styles/master-data.css'
 
 export default function ItemGroups() {
@@ -101,35 +102,42 @@ export default function ItemGroups() {
 
             {/* Customer Filter */}
             <GlassCard title={t('select_customer')}>
-                <select
+                <EntitySelector
+                    items={customers}
                     value={selectedCustomer}
-                    onChange={e => handleCustomerChange(e.target.value)}
-                    className="form-select"
-                    style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}
-                >
-                    <option value="">{t('all_customers')}</option>
-                    {customers.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                    onChange={handleCustomerChange}
+                    displayField="name"
+                    valueField="id"
+                    searchFields={['id', 'name', 'city']}
+                    columns={[
+                        { key: 'id', label: t('id') },
+                        { key: 'name', label: t('name') },
+                        { key: 'city', label: t('city') }
+                    ]}
+                    placeholder={t('all_customers')}
+                />
             </GlassCard>
 
             <GlassCard title={isEditing ? t('edit') : t('create')}>
                 <form onSubmit={handleSubmit} className="master-form">
                     <input type="text" placeholder={`${t('id')} *`} value={formData.id} onChange={e => setFormData({ ...formData, id: e.target.value })} required disabled={isEditing} />
                     <input type="text" placeholder={t('description')} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                    <select
+                    <EntitySelector
+                        items={customers}
                         value={formData.customerId}
-                        onChange={e => setFormData({ ...formData, customerId: e.target.value })}
-                        className="form-select"
-                        style={{ marginBottom: '1rem', width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                        onChange={(value) => setFormData({ ...formData, customerId: value })}
+                        label={t('customer')}
+                        displayField="name"
+                        valueField="id"
+                        searchFields={['id', 'name', 'city']}
+                        columns={[
+                            { key: 'id', label: t('id') },
+                            { key: 'name', label: t('name') },
+                            { key: 'city', label: t('city') }
+                        ]}
                         disabled={!!selectedCustomer}
-                    >
-                        <option value="">{t('select_customer')}</option>
-                        {customers.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                    </select>
+                        placeholder={t('select_customer')}
+                    />
                     <input type="text" placeholder="Category" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} />
                     <div className="form-actions">
                         <button type="submit" className="btn-primary">{isEditing ? t('update') : t('create')}</button>

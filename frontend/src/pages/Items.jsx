@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import GlassCard from '../components/GlassCard'
+import EntitySelector from '../components/EntitySelector'
 import '../styles/master-data.css'
 
 export default function Items() {
@@ -130,17 +131,20 @@ export default function Items() {
 
             {/* Customer Filter */}
             <GlassCard title={t('select_customer')}>
-                <select
+                <EntitySelector
+                    items={customers}
                     value={selectedCustomer}
-                    onChange={e => handleCustomerChange(e.target.value)}
-                    className="form-select"
-                    style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}
-                >
-                    <option value="">{t('all_customers')}</option>
-                    {customers.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                    onChange={handleCustomerChange}
+                    displayField="name"
+                    valueField="id"
+                    searchFields={['id', 'name', 'city']}
+                    columns={[
+                        { key: 'id', label: t('id') },
+                        { key: 'name', label: t('name') },
+                        { key: 'city', label: t('city') }
+                    ]}
+                    placeholder={t('all_customers')}
+                />
             </GlassCard>
 
             <GlassCard title={isEditing ? t('edit') : t('create')}>
@@ -166,28 +170,38 @@ export default function Items() {
                         value={formData.unitOfMeasure}
                         onChange={e => setFormData({ ...formData, unitOfMeasure: e.target.value })}
                     />
-                    <select
+                    <EntitySelector
+                        items={customers}
                         value={formData.customerId}
-                        onChange={e => setFormData({ ...formData, customerId: e.target.value })}
-                        className="form-select"
+                        onChange={(value) => setFormData({ ...formData, customerId: value })}
+                        label={t('customer')}
+                        displayField="name"
+                        valueField="id"
+                        searchFields={['id', 'name', 'city']}
+                        columns={[
+                            { key: 'id', label: t('id') },
+                            { key: 'name', label: t('name') },
+                            { key: 'city', label: t('city') }
+                        ]}
                         disabled={!!selectedCustomer}
-                    >
-                        <option value="">{t('select_customer')}</option>
-                        {customers.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                    </select>
+                        placeholder={t('select_customer')}
+                    />
 
-                    <select
+                    <EntitySelector
+                        items={filteredItemGroups}
                         value={formData.itemGroupId}
-                        onChange={e => setFormData({ ...formData, itemGroupId: e.target.value })}
-                        className="form-select"
-                    >
-                        <option value="">{t('select_item_group')}</option>
-                        {filteredItemGroups.map(g => (
-                            <option key={g.id} value={g.id}>{g.description || g.id}</option>
-                        ))}
-                    </select>
+                        onChange={(value) => setFormData({ ...formData, itemGroupId: value })}
+                        label={t('item_group')}
+                        displayField="description"
+                        valueField="id"
+                        searchFields={['id', 'description', 'category']}
+                        columns={[
+                            { key: 'id', label: t('id') },
+                            { key: 'description', label: t('description') },
+                            { key: 'category', label: 'Category' }
+                        ]}
+                        placeholder={t('select_item_group')}
+                    />
                     <input
                         type="number"
                         step="0.01"

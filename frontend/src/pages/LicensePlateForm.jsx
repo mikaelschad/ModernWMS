@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import GlassCard from '../components/GlassCard'
 import { useFacility } from '../contexts/FacilityContext'
 import './PlateLookup.css' // Reusing existing styles for now
@@ -53,7 +54,7 @@ const LicensePlateForm = ({ plate, onSave, onCancel }) => {
         }
     }
 
-    return (
+    return createPortal(
         <div className="modal-overlay">
             <div className="modal-content">
                 <GlassCard title={isEditing ? `Edit Plate: ${formData.id}` : "Create New License Plate"}>
@@ -186,7 +187,8 @@ const LicensePlateForm = ({ plate, onSave, onCancel }) => {
                     </form>
                 </GlassCard>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }
 
