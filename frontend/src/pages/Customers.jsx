@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import '../styles/master-data.css'
 
@@ -18,8 +19,8 @@ export default function Customers() {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Customer')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Customer')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('customers') }))
         }
@@ -34,19 +35,13 @@ export default function Customers() {
         console.log('URL:', url, 'Method:', method)
 
         try {
-            const res = await fetch(url, {
+            const res = await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
 
             console.log('Response status:', res.status)
-
-            if (!res.ok) {
-                const errorText = await res.text()
-                console.error('Error response:', errorText)
-                throw new Error(errorText || t('error_save'))
-            }
 
             setSuccessMsg(isEditing ? t('success_updated', { item: t('customer') }) : t('success_created', { item: t('customer') }))
             setError(null)
@@ -55,7 +50,8 @@ export default function Customers() {
             fetchItems()
         } catch (err) {
             console.error('Caught error:', err)
-            setError(err.message)
+            const errorText = err.response?.data || err.message
+            setError(typeof errorText === 'string' ? errorText : t('error_save'))
             setSuccessMsg(null)
         }
     }
@@ -69,12 +65,11 @@ export default function Customers() {
         if (!confirm(t('confirm_delete', { item: id }))) return
 
         try {
-            const res = await fetch(`http://localhost:5017/api/Customer/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Customer/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('customer') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 

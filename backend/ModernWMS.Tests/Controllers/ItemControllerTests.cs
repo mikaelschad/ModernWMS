@@ -71,7 +71,7 @@ public class ItemControllerTests
     {
         // Arrange
         var item = new Item { SKU = "ITEM1", Description = "Test Item" };
-        _mockRepo.Setup(repo => repo.CreateAsync(item)).Returns(Task.CompletedTask);
+        _mockRepo.Setup(repo => repo.CreateAsync(item)).ReturnsAsync("ITEM1");
 
         // Act
         var result = await _controller.Create(item);
@@ -79,7 +79,8 @@ public class ItemControllerTests
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         Assert.Equal(nameof(ItemController.GetById), createdResult.ActionName);
-        Assert.Equal("ITEM1", ((Item)createdResult.Value).SKU);
+        var returnItem = Assert.IsType<Item>(createdResult.Value);
+        Assert.Equal("ITEM1", returnItem.SKU);
     }
 
     [Fact]

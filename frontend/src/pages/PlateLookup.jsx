@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import LicensePlateForm from './LicensePlateForm'
 import { useFacility } from '../contexts/FacilityContext'
@@ -46,11 +47,11 @@ const PlateLookup = () => {
     const fetchMetadata = async () => {
       try {
         const [custRes, facRes] = await Promise.all([
-          fetch('http://localhost:5017/api/LicensePlate/customers?onlyActive=true'),
-          fetch('http://localhost:5017/api/LicensePlate/facilities?onlyActive=true')
+          axios.get('http://localhost:5017/api/LicensePlate/customers?onlyActive=true'),
+          axios.get('http://localhost:5017/api/LicensePlate/facilities?onlyActive=true')
         ])
-        if (custRes.ok) setCustomers(await custRes.json())
-        if (facRes.ok) setFacilities(await facRes.json())
+        setCustomers(custRes.data)
+        setFacilities(facRes.data)
       } catch (err) {
         console.error('Failed to fetch search metadata:', err)
       }
@@ -82,11 +83,8 @@ const PlateLookup = () => {
     setSelectedPlate(null)
 
     try {
-      const response = await fetch(`http://localhost:5017/api/LicensePlate/search?${params.toString()}`)
-      if (!response.ok) {
-        throw new Error(t('error_fetch', { item: t('items') }))
-      }
-      const data = await response.json()
+      const response = await axios.get(`http://localhost:5017/api/LicensePlate/search?${params.toString()}`)
+      const data = response.data
       setResults(data)
 
       if (data.length === 1) {
@@ -107,19 +105,13 @@ const PlateLookup = () => {
     setSuccessMsg(null)
 
     try {
-      const response = await fetch('http://localhost:5017/api/LicensePlate/move', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          plateId: selectedPlate.id,
-          targetLocation: 'ZONE-A-01', // This should normally come from the AI suggested logic
-          user: 'AI_SYSTEM'
-        })
+      await axios.post('http://localhost:5017/api/LicensePlate/move', {
+        plateId: selectedPlate.id,
+        targetLocation: 'ZONE-A-01', // This should normally come from the AI suggested logic
+        user: 'AI_SYSTEM'
       })
 
-      if (!response.ok) throw new Error('Failed to execute move. Legacy WMS rejected the transaction.')
+
 
       setSuccessMsg(t('success_updated', { item: `${t('plate')} ${selectedPlate.id}` }))
 
@@ -170,11 +162,7 @@ const PlateLookup = () => {
     if (!window.confirm(t('confirm_delete', { item: id }))) return
 
     try {
-      const response = await fetch(`http://localhost:5017/api/LicensePlate/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!response.ok) throw new Error(t('error_delete'))
+      await axios.delete(`http://localhost:5017/api/LicensePlate/${id}`)
 
       setSuccessMsg(t('success_deleted', { item: t('plate') }))
       setSelectedPlate(null)
@@ -192,16 +180,11 @@ const PlateLookup = () => {
 
     const method = isNew ? 'POST' : 'PUT'
 
-    const response = await fetch(url, {
+    const response = await axios({
       method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(plateData)
+      url,
+      data: plateData
     })
-
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(text || t('error_save'))
-    }
 
     setShowForm(false)
     setEditingPlate(null)

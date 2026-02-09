@@ -353,6 +353,42 @@ END";
                 Console.WriteLine("✓ ITEMGROUP table migrated");
             }
         }
+
+        // MIGRATION: ADD FACILITY TO SECTION AND MAKE ZONE OPTIONAL
+        var checkSectionFacility = "SELECT COL_LENGTH('SECTION', 'FACILITY')";
+        using (var cmd = new SqlCommand(checkSectionFacility, conn))
+        {
+            var result = cmd.ExecuteScalar();
+            if (result == DBNull.Value)
+            {
+                Console.WriteLine("Migrating SECTION table: Adding FACILITY...");
+                using (var alterCmd = new SqlCommand("ALTER TABLE SECTION ADD FACILITY VARCHAR(3)", conn))
+                {
+                    alterCmd.ExecuteNonQuery();
+                }
+                
+                // If it's a new migration, we might want to populate existing records with a default facility if any
+                // using (var updateCmd = new SqlCommand("UPDATE SECTION SET FACILITY = 'FAC' WHERE FACILITY IS NULL", conn)) { updateCmd.ExecuteNonQuery(); }
+            }
+        }
+
+        var checkSectionZoneNullable = @"
+            SELECT is_nullable 
+            FROM sys.columns 
+            WHERE object_id = OBJECT_ID('SECTION') AND name = 'ZONE'";
+        using (var cmd = new SqlCommand(checkSectionZoneNullable, conn))
+        {
+            var isNullable = cmd.ExecuteScalar();
+            if (isNullable != null && (bool)isNullable == false)
+            {
+                Console.WriteLine("Migrating SECTION table: Making ZONE optional...");
+                using (var alterCmd = new SqlCommand("ALTER TABLE SECTION ALTER COLUMN ZONE VARCHAR(10) NULL", conn))
+                {
+                    alterCmd.ExecuteNonQuery();
+                }
+            }
+        }
+        Console.WriteLine("✓ SECTION table migration check complete");
     }
     
     Console.WriteLine("\n✅ Database setup complete!");

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import '../styles/master-data.css'
 
@@ -18,8 +19,8 @@ export default function Consignees() {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Consignee')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Consignee')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('consignees') }))
         }
@@ -31,19 +32,18 @@ export default function Consignees() {
         const url = isEditing ? `http://localhost:5017/api/Consignee/${formData.id}` : 'http://localhost:5017/api/Consignee'
 
         try {
-            const res = await fetch(url, {
+            await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
-            if (!res.ok) throw new Error(t('error_save'))
             setSuccessMsg(isEditing ? t('success_updated', { item: t('consignee') }) : t('success_created', { item: t('consignee') }))
             setError(null)
             setIsEditing(false)
             setFormData(init)
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null)
         }
     }
@@ -57,12 +57,11 @@ export default function Consignees() {
         if (!confirm(t('confirm_delete', { item: id }))) return
 
         try {
-            const res = await fetch(`http://localhost:5017/api/Consignee/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Consignee/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('consignee') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 

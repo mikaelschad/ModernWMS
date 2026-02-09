@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.Services;
 
 namespace ModernWMS.Backend.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize]
 public class AIController : ControllerBase
 {
     private readonly IAIOptimizationService _aiService;

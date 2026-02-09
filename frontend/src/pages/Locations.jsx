@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import { useFacility } from '../contexts/FacilityContext'
 import GlassCard from '../components/GlassCard'
 import '../styles/master-data.css'
@@ -24,8 +25,8 @@ export default function Locations() {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Location')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Location')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('locations') }))
         }
@@ -37,19 +38,18 @@ export default function Locations() {
         const url = isEditing ? `http://localhost:5017/api/Location/${formData.id}` : 'http://localhost:5017/api/Location'
 
         try {
-            const res = await fetch(url, {
+            await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
-            if (!res.ok) throw new Error(t('error_save'))
             setSuccessMsg(isEditing ? t('success_updated', { item: t('location') }) : t('success_created', { item: t('location') }))
             setError(null)
             setIsEditing(false)
             setFormData(init)
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null)
         }
     }
@@ -63,12 +63,11 @@ export default function Locations() {
         if (!confirm(t('confirm_delete', { item: id }))) return
 
         try {
-            const res = await fetch(`http://localhost:5017/api/Location/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Location/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('location') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 

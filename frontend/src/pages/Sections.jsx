@@ -1,23 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
+import { useFacility } from '../contexts/FacilityContext'
 import GlassCard from '../components/GlassCard'
 import '../styles/master-data.css'
 
 export default function Sections() {
     const { t } = useTranslation()
-    const init = { id: '', zoneId: '', description: '', status: 'A' }
+    const { currentFacility } = useFacility()
+    const init = { id: '', facilityId: currentFacility?.id || '', description: '', status: 'A' }
     const [items, setItems] = useState([])
     const [formData, setFormData] = useState(init)
     const [isEditing, setIsEditing] = useState(false)
     const [error, setError] = useState(null)
     const [successMsg, setSuccessMsg] = useState(null)
 
-    useEffect(() => { fetchItems() }, [])
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
+    useEffect(() => {
+        if (currentFacility && !isEditing) {
+            setFormData(prev => ({ ...prev, facilityId: currentFacility.id }))
+        }
+    }, [currentFacility, isEditing])
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Section')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Section')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('sections') }))
         }
@@ -28,19 +39,18 @@ export default function Sections() {
         const method = isEditing ? 'PUT' : 'POST'
         const url = isEditing ? `http://localhost:5017/api/Section/${formData.id}` : 'http://localhost:5017/api/Section'
         try {
-            const res = await fetch(url, {
+            await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
-            if (!res.ok) throw new Error(t('error_save'))
             setSuccessMsg(isEditing ? t('success_updated', { item: t('section') }) : t('success_created', { item: t('section') }))
             setError(null)
             setIsEditing(false)
             setFormData(init)
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null)
         }
     }
@@ -53,12 +63,11 @@ export default function Sections() {
     const handleDelete = async (id) => {
         if (!confirm(t('confirm_delete', { item: id }))) return
         try {
-            const res = await fetch(`http://localhost:5017/api/Section/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Section/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('section') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 
@@ -71,13 +80,51 @@ export default function Sections() {
 
             <GlassCard title={isEditing ? t('edit') : t('create')}>
                 <form onSubmit={handleSubmit} className="master-form">
-                    <input type="text" placeholder={`${t('id')} *`} value={formData.id} onChange={e => setFormData({ ...formData, id: e.target.value })} required disabled={isEditing} />
-                    <input type="text" placeholder={`${t('zone')} *`} value={formData.zoneId} onChange={e => setFormData({ ...formData, zoneId: e.target.value })} required />
-                    <input type="text" placeholder={t('description')} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                    <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}><option value="A">{t('active')}</option><option value="I">{t('inactive')}</option></select>
+                    <input
+                        type="text"
+                        placeholder={`${t('id')} *`}
+                        value={formData.id}
+                        onChange={e => setFormData({ ...formData, id: e.target.value })}
+                        required
+                        disabled={isEditing}
+                    />
+                    <input
+                        type="text"
+                        placeholder={`${t('facility')} *`}
+                        value={formData.facilityId}
+                        onChange={e => setFormData({ ...formData, facilityId: e.target.value })}
+                        required
+                    />
+                    <input
+                        type="text"
+                        placeholder={t('description')}
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    />
+                    <select
+                        value={formData.status}
+                        onChange={e => setFormData({ ...formData, status: e.target.value })}
+                    >
+                        <option value="A">{t('active')}</option>
+                        <option value="I">{t('inactive')}</option>
+                    </select>
+
                     <div className="form-actions">
-                        <button type="submit" className="btn-primary">{isEditing ? t('update') : t('create')}</button>
-                        {isEditing && <button type="button" onClick={() => { setFormData(init); setIsEditing(false) }} className="btn-secondary">{t('cancel')}</button>}
+                        <button type="submit" className="btn-primary">
+                            {isEditing ? t('update') : t('create')}
+                        </button>
+                        {isEditing && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFormData(init)
+                                    setIsEditing(false)
+                                }}
+                                className="btn-secondary"
+                            >
+                                {t('cancel')}
+                            </button>
+                        )}
                     </div>
                 </form>
             </GlassCard>
@@ -86,13 +133,19 @@ export default function Sections() {
                 <div className="master-table">
                     <table>
                         <thead>
-                            <tr><th>{t('id')}</th><th>{t('zone')}</th><th>{t('description')}</th><th>{t('status')}</th><th>{t('actions')}</th></tr>
+                            <tr>
+                                <th>{t('id')}</th>
+                                <th>{t('facility')}</th>
+                                <th>{t('description')}</th>
+                                <th>{t('status')}</th>
+                                <th>{t('actions')}</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {items.map(item => (
                                 <tr key={item.id}>
                                     <td>{item.id}</td>
-                                    <td>{item.zoneId}</td>
+                                    <td>{item.facilityId}</td>
                                     <td>{item.description}</td>
                                     <td>{item.status === 'A' ? t('active') : t('inactive')}</td>
                                     <td className="actions">

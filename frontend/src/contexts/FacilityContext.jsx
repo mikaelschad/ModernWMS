@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import axios from 'axios'
 
 const FacilityContext = createContext()
 
@@ -19,26 +20,23 @@ export const FacilityProvider = ({ children }) => {
     useEffect(() => {
         const fetchFacilities = async () => {
             try {
-                const response = await fetch('http://localhost:5017/api/Facility')
-                if (response.ok) {
-                    const data = await response.json()
-                    const activeFacilities = data.filter(f => f.status === 'A')
-                    setFacilities(activeFacilities)
+                const response = await axios.get('http://localhost:5017/api/Facility')
+                const activeFacilities = response.data.filter(f => f.status === 'A')
+                setFacilities(activeFacilities)
 
-                    // Load saved facility from localStorage
-                    const savedFacilityId = localStorage.getItem('currentFacilityId')
-                    if (savedFacilityId) {
-                        const savedFacility = activeFacilities.find(f => f.id === savedFacilityId)
-                        if (savedFacility) {
-                            setCurrentFacility(savedFacility)
-                        } else if (activeFacilities.length > 0) {
-                            // If saved facility not found, use first available
-                            setCurrentFacility(activeFacilities[0])
-                        }
+                // Load saved facility from localStorage
+                const savedFacilityId = localStorage.getItem('currentFacilityId')
+                if (savedFacilityId) {
+                    const savedFacility = activeFacilities.find(f => f.id === savedFacilityId)
+                    if (savedFacility) {
+                        setCurrentFacility(savedFacility)
                     } else if (activeFacilities.length > 0) {
-                        // No saved facility, use first available
+                        // If saved facility not found, use first available
                         setCurrentFacility(activeFacilities[0])
                     }
+                } else if (activeFacilities.length > 0) {
+                    // No saved facility, use first available
+                    setCurrentFacility(activeFacilities[0])
                 }
             } catch (error) {
                 console.error('Failed to fetch facilities:', error)

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import EntitySelector from '../components/EntitySelector'
 import '../styles/master-data.css'
@@ -92,8 +93,8 @@ export default function Items() {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Item')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Item')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('items') }))
         }
@@ -101,8 +102,8 @@ export default function Items() {
 
     const fetchCustomers = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Customer')
-            if (res.ok) setCustomers(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Customer')
+            setCustomers(res.data)
         } catch (err) {
             console.error(err)
         }
@@ -110,8 +111,8 @@ export default function Items() {
 
     const fetchItemGroups = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/ItemGroup')
-            if (res.ok) setItemGroups(await res.json())
+            const res = await axios.get('http://localhost:5017/api/ItemGroup')
+            setItemGroups(res.data)
         } catch (err) {
             console.error(err)
         }
@@ -126,19 +127,13 @@ export default function Items() {
         console.log('URL:', url, 'Method:', method)
 
         try {
-            const res = await fetch(url, {
+            const res = await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
 
             console.log('Response status:', res.status)
-
-            if (!res.ok) {
-                const errorText = await res.text()
-                console.error('Error response:', errorText)
-                throw new Error(errorText || t('error_save'))
-            }
 
             setSuccessMsg(isEditing ? t('success_updated', { item: t('item') }) : t('success_created', { item: t('item') }))
             setError(null)
@@ -147,7 +142,8 @@ export default function Items() {
             fetchItems()
         } catch (err) {
             console.error('Caught error:', err)
-            setError(err.message)
+            const errorText = err.response?.data || err.message
+            setError(typeof errorText === 'string' ? errorText : t('error_save'))
             setSuccessMsg(null)
         }
     }
@@ -161,12 +157,11 @@ export default function Items() {
         if (!confirm(t('confirm_delete', { item: sku }))) return
 
         try {
-            const res = await fetch(`http://localhost:5017/api/Item/${sku}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Item/${sku}`)
             setSuccessMsg(t('success_deleted', { item: t('item') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 

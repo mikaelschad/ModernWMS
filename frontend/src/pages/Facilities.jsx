@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import './Facilities.css'
 
@@ -47,12 +48,10 @@ const Facilities = () => {
     const fetchFacilities = async () => {
         try {
             setLoading(true)
-            const res = await fetch('http://localhost:5017/api/Facility')
-            if (!res.ok) throw new Error(t('error_fetch', { item: t('facilities') }))
-            const data = await res.json()
-            setFacilities(data)
+            const res = await axios.get('http://localhost:5017/api/Facility')
+            setFacilities(res.data)
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         } finally {
             setLoading(false)
         }
@@ -73,15 +72,11 @@ const Facilities = () => {
             : 'http://localhost:5017/api/Facility'
 
         try {
-            const res = await fetch(url, {
+            await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
-            if (!res.ok) {
-                const errorText = await res.text()
-                throw new Error(errorText || t('error_save'))
-            }
 
             setSuccessMsg(isEditing ? t('success_updated', { item: t('facility') }) : t('success_created', { item: t('facility') }))
             setError(null); // Clear any previous errors
@@ -89,7 +84,7 @@ const Facilities = () => {
             setFormData(initialForm)
             fetchFacilities()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null); // Clear any previous success messages
         }
     }
@@ -105,13 +100,12 @@ const Facilities = () => {
     const handleDelete = async (id) => {
         if (!window.confirm(t('confirm_delete', { item: id }))) return
         try {
-            const res = await fetch(`http://localhost:5017/api/Facility/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/Facility/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('facility') }))
             setError(null); // Clear any previous errors
             fetchFacilities()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null); // Clear any previous success messages
         }
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import EntitySelector from '../components/EntitySelector'
 import '../styles/master-data.css'
@@ -38,8 +39,8 @@ export default function ItemGroups() {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/ItemGroup')
-            if (res.ok) setItems(await res.json())
+            const res = await axios.get('http://localhost:5017/api/ItemGroup')
+            setItems(res.data)
         } catch (err) {
             setError(t('error_fetch', { item: t('item_groups') }))
         }
@@ -47,8 +48,8 @@ export default function ItemGroups() {
 
     const fetchCustomers = async () => {
         try {
-            const res = await fetch('http://localhost:5017/api/Customer')
-            if (res.ok) setCustomers(await res.json())
+            const res = await axios.get('http://localhost:5017/api/Customer')
+            setCustomers(res.data)
         } catch (err) {
             console.error(err)
         }
@@ -59,19 +60,18 @@ export default function ItemGroups() {
         const method = isEditing ? 'PUT' : 'POST'
         const url = isEditing ? `http://localhost:5017/api/ItemGroup/${formData.id}` : 'http://localhost:5017/api/ItemGroup'
         try {
-            const res = await fetch(url, {
+            await axios({
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                url,
+                data: formData
             })
-            if (!res.ok) throw new Error(t('error_save'))
             setSuccessMsg(isEditing ? t('success_updated', { item: t('item_group') }) : t('success_created', { item: t('item_group') }))
             setError(null)
             setIsEditing(false)
             setFormData(init)
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
             setSuccessMsg(null)
         }
     }
@@ -84,12 +84,11 @@ export default function ItemGroups() {
     const handleDelete = async (id) => {
         if (!confirm(t('confirm_delete', { item: id }))) return
         try {
-            const res = await fetch(`http://localhost:5017/api/ItemGroup/${id}`, { method: 'DELETE' })
-            if (!res.ok) throw new Error(t('error_delete'))
+            await axios.delete(`http://localhost:5017/api/ItemGroup/${id}`)
             setSuccessMsg(t('success_deleted', { item: t('item_group') }))
             fetchItems()
         } catch (err) {
-            setError(err.message)
+            setError(err.response?.data || err.message)
         }
     }
 

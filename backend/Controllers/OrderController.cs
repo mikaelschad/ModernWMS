@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.DTOs;
 
 namespace ModernWMS.Backend.Controllers;
 
 [ApiController]
 [Route("api/v1/orders")]
+[Authorize]
 public class OrderController : ControllerBase
 {
     [HttpPost("inbound")]

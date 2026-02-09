@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.Models;
 using ModernWMS.Backend.Repositories;
 
@@ -6,6 +7,7 @@ namespace ModernWMS.Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ItemGroupController : ControllerBase
 {
     private readonly IItemGroupRepository _repository;
