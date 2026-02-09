@@ -300,21 +300,43 @@ END";
         }
         Console.WriteLine("✓ ITEM table created");
 
-        // MIGRATION: ADD CUSTID TO ITEM IF MISSING
-        var checkItemCustId = "SELECT COL_LENGTH('ITEM', 'CUSTID')";
-        using (var cmd = new SqlCommand(checkItemCustId, conn))
+        // MIGRATION: ADD ADVANCED COLUMNS TO ITEM IF MISSING
+        var advancedColumns = new Dictionary<string, string>
         {
-            var result = cmd.ExecuteScalar();
-            if (result == DBNull.Value)
+            { "CUSTID", "VARCHAR(15)" },
+            { "ABBREVIATION", "VARCHAR(50)" },
+            { "RATEGROUP", "VARCHAR(20)" },
+            { "PRODUCTGROUP", "VARCHAR(20)" },
+            { "KITTYPE", "VARCHAR(20)" },
+            { "REQUIRECYCLECOUNT", "BIT DEFAULT 0" },
+            { "REQUIRELOTNUMBER", "BIT DEFAULT 0" },
+            { "REQUIRESERIALNUMBER", "BIT DEFAULT 0" },
+            { "REQUIREMANUFACTUREDATE", "BIT DEFAULT 0" },
+            { "REQUIREEXPIRATIONDATE", "BIT DEFAULT 0" },
+            { "ISHAZARDOUS", "BIT DEFAULT 0" },
+            { "UNNUMBER", "VARCHAR(20)" },
+            { "HAZARDCLASS", "VARCHAR(20)" },
+            { "PACKINGGROUP", "VARCHAR(10)" },
+            { "VOLUME", "DECIMAL(18, 4)" }
+        };
+
+        foreach (var col in advancedColumns)
+        {
+            var checkCol = $"SELECT COL_LENGTH('ITEM', '{col.Key}')";
+            using (var cmd = new SqlCommand(checkCol, conn))
             {
-                Console.WriteLine("Migrating ITEM table: Adding CUSTID...");
-                using (var alterCmd = new SqlCommand("ALTER TABLE ITEM ADD CUSTID VARCHAR(15)", conn))
+                var result = cmd.ExecuteScalar();
+                if (result == DBNull.Value)
                 {
-                    alterCmd.ExecuteNonQuery();
+                    Console.WriteLine($"Migrating ITEM table: Adding {col.Key}...");
+                    using (var alterCmd = new SqlCommand($"ALTER TABLE ITEM ADD {col.Key} {col.Value}", conn))
+                    {
+                        alterCmd.ExecuteNonQuery();
+                    }
                 }
-                Console.WriteLine("✓ ITEM table migrated");
             }
         }
+        Console.WriteLine("✓ ITEM table migration check complete");
 
         // MIGRATION: ADD CUSTID TO ITEMGROUP IF MISSING
         var checkGroupCustId = "SELECT COL_LENGTH('ITEMGROUP', 'CUSTID')";
