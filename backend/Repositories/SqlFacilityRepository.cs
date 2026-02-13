@@ -151,7 +151,7 @@ public class SqlFacilityRepository : IFacilityRepository
     {
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
-        string query = "UPDATE FACILITY SET FACILITYSTATUS = 'I', LASTUPDATE = GETDATE() WHERE FACILITY = @id";
+        string query = "DELETE FROM FACILITY WHERE FACILITY = @id";
         using var cmd = new SqlCommand(query, conn);
         cmd.Parameters.AddWithValue("@id", id);
         int affected = await cmd.ExecuteNonQueryAsync();

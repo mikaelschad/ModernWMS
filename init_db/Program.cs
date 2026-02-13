@@ -83,6 +83,20 @@ END";
             cmd.ExecuteNonQuery();
         }
         Console.WriteLine("✓ FACILITY table created");
+
+        // Seed FACILITY table
+        var seedFacilities = @"
+IF NOT EXISTS (SELECT * FROM FACILITY)
+BEGIN
+    INSERT INTO FACILITY (FACILITY, NAME, ADDR1, CITY, STATE, POSTALCODE, COUNTRYCODE, MANAGER, FACILITYSTATUS, LASTUSER)
+    VALUES ('ORA', 'Oracle Legacy Warehouse', '100 Oracle Way', 'Austin', 'TX', '78741', 'US', 'Oracle Admin', 'A', 'SYSTEM'),
+           ('MOD', 'Modern Distribution Center', '500 Logistics Drive', 'Atlanta', 'GA', '30301', 'US', 'Modern Manager', 'A', 'SYSTEM');
+END";
+        using (var cmd = new SqlCommand(seedFacilities, conn))
+        {
+            cmd.ExecuteNonQuery();
+        }
+        Console.WriteLine("✓ FACILITY table seeded");
         
         // Create PLATE table
         var createPlate = @"
@@ -255,6 +269,31 @@ END";
             cmd.ExecuteNonQuery();
         }
         Console.WriteLine("✓ CONSIGNEE table created");
+        
+        // Create EMPLOYEE table
+        var createEmployee = @"
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EMPLOYEE')
+BEGIN
+    CREATE TABLE EMPLOYEE (
+        EMPLOYEEID VARCHAR(20) PRIMARY KEY,
+        NAME VARCHAR(100) NOT NULL,
+        PASSWORD VARCHAR(100) NOT NULL,
+        FACILITY VARCHAR(3),
+        STATUS CHAR(1) DEFAULT 'A',
+        LANGUAGE VARCHAR(5) DEFAULT 'en',
+        LASTUPDATE DATETIME DEFAULT GETDATE(),
+        LASTUSER VARCHAR(20) DEFAULT 'SYSTEM'
+    );
+    -- Insert default admin user
+    INSERT INTO EMPLOYEE (EMPLOYEEID, NAME, PASSWORD, FACILITY, STATUS)
+    VALUES ('admin', 'System Administrator', 'password', 'ALL', 'A');
+END";
+        
+        using (var cmd = new SqlCommand(createEmployee, conn))
+        {
+            cmd.ExecuteNonQuery();
+        }
+        Console.WriteLine("✓ EMPLOYEE table created");
         
         // Create ITEMGROUP table
         var createItemGroup = @"

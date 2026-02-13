@@ -1,5 +1,13 @@
 :root {
   /* Common variables */
+  --font-inter: 'Inter', -apple-system, sans-serif;
+  --radius-lg: 1.25rem;
+  --radius-md: 0.75rem;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
   /* Schad Logistics Theme */
   --primary: #002D62;
   /* Navy Blue */
@@ -7,36 +15,41 @@
   /* Vivid Orange */
   --accent: #F26522;
 
-  /* Light mode defaults */
-  --background: #f8fafc;
+  /* Light mode defaults (Schad Logistics Professional) */
+  --background: #d3d3d3a2;
+  /* Darker blue-grey for contrast */
   --surface: #ffffff;
-  --text: #0f172a;
+  --text: #1e293b;
+  --text-headers: #0f172a;
   --text-muted: #64748b;
-  --border: #e2e8f0;
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
+  --border: #cbd5e1;
+  /* Darker border for visibility */
+  --input-bg: #f1f5f9;
+  /* Slightly off-white for inputs */
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(203, 213, 225, 1);
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-  /* Gradient overlays for light mode */
-  /* Gradient overlays for light mode */
-  --gradient-overlay-1: rgba(0, 45, 98, 0.05);
-  --gradient-overlay-2: rgba(242, 101, 34, 0.05);
-  --gradient-overlay-3: rgba(0, 45, 98, 0.05);
+  /* Gradient overlays */
+  --gradient-overlay-1: rgba(0, 45, 98, 0.03);
+  --gradient-overlay-2: rgba(242, 101, 34, 0.03);
+  --gradient-overlay-3: rgba(0, 45, 98, 0.03);
 }
 
 [data-theme='dark'] {
-  --background: #0f172a;
-  --surface: #1e293b;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --background: #020617;
+  --surface: #0f172a;
+  --text: #7a8188;
+  --text-headers: #f8fafc;
+  --text-muted: #414b58;
+  --border: #1e293b;
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
 
-  /* Gradient overlays for dark mode */
-  /* Gradient overlays for dark mode */
-  --gradient-overlay-1: rgba(0, 45, 98, 0.25);
-  --gradient-overlay-2: rgba(242, 101, 34, 0.15);
-  --gradient-overlay-3: rgba(0, 45, 98, 0.25);
+  --gradient-overlay-1: rgba(0, 45, 98, 0.2);
+  --gradient-overlay-2: rgba(242, 101, 34, 0.1);
+  --gradient-overlay-3: rgba(0, 45, 98, 0.2);
 }
 
 [data-theme='plexus'] {
@@ -45,12 +58,13 @@
   --secondary: #FF9500;
   --accent: #00E5FF;
 
-  --background: #1E2530;
-  --surface: #2A3441;
-  --text: #E8F4F8;
-  --text-muted: #8BA3B8;
-  --border: #3D4A5C;
-  --glass-bg: rgba(0, 212, 255, 0.05);
+  --background: #0d1117;
+  --surface: #161b22;
+  --text: #e6edf3;
+  --text-headers: #ffffff;
+  --text-muted: #8b949e;
+  --border: #30363d;
+  --glass-bg: rgba(22, 27, 34, 0.7);
   --glass-border: rgba(0, 212, 255, 0.15);
 
   /* Gradient overlays for plexus theme */
@@ -61,7 +75,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-inter);
   background: var(--background);
   background-image:
     radial-gradient(at 0% 0%, var(--gradient-overlay-1) 0, transparent 50%),
@@ -74,7 +88,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Plexus logo watermark - disabled until plexus-watermark.png is added to /public */
+/* Plexus logo watermark */
 body::before {
   content: '';
   position: fixed;
@@ -95,7 +109,6 @@ body::before {
   filter: blur(0.3px);
 }
 
-
 body>* {
   position: relative;
   z-index: 1;
@@ -109,7 +122,9 @@ h1,
 h2,
 h3,
 h4 {
-  color: #fff;
+  color: var(--text-headers);
+  margin-top: 0;
+  font-weight: 700;
   letter-spacing: -0.025em;
 }
 
@@ -128,12 +143,9 @@ h4 {
 
 .metric-value {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 0.5rem 0;
-  background: linear-gradient(to right, #fff, #94a3b8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-headers);
 }
 
 .metric-label {

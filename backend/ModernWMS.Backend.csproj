@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="DbCheck.cs" />
     <Compile Remove="ModernWMS.Tests\**" />
     <EmbeddedResource Remove="ModernWMS.Tests\**" />
     <None Remove="ModernWMS.Tests\**" />

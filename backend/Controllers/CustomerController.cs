@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.Models;
 using ModernWMS.Backend.Repositories;
+using ModernWMS.Backend.Attributes;
 
 namespace ModernWMS.Backend.Controllers;
 
@@ -20,11 +21,20 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission("CUSTOMER_READ")]
     public async Task<ActionResult<IEnumerable<Customer>>> GetAll()
     {
         try
         {
             var customers = await _repository.GetAllAsync();
+            
+            // Filter by user's accessible customers (from middleware)
+            var accessibleCustomers = HttpContext.Items["AccessibleCustomers"] as List<string>;
+            if (accessibleCustomers != null && accessibleCustomers.Count > 0 && !accessibleCustomers.Contains("ALL"))
+            {
+                customers = customers.Where(c => accessibleCustomers.Contains(c.Id)).ToList();
+            }
+            
             return Ok(customers);
         }
         catch (Exception ex)
@@ -35,6 +45,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission("CUSTOMER_READ")]
     public async Task<ActionResult<Customer>> GetById(string id)
     {
         try
@@ -51,6 +62,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission("CUSTOMER_CREATE")]
     public async Task<ActionResult<Customer>> Create([FromBody] Customer customer)
     {
         try
@@ -90,6 +102,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HasPermission("CUSTOMER_UPDATE")]
     public async Task<IActionResult> Update(string id, [FromBody] Customer customer)
     {
         try
@@ -109,6 +122,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission("CUSTOMER_UPDATE")]
     public async Task<IActionResult> Delete(string id)
     {
         try
@@ -117,6 +131,11 @@ public class CustomerController : ControllerBase
             if (!success) return NotFound();
             
             return NoContent();
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 547)
+        {
+            _logger.LogWarning(ex, "Attempted to delete customer {Id} which is in use.", id);
+            return Conflict($"Customer '{id}' is currently in use and cannot be deleted.");
         }
         catch (Exception ex)
         {

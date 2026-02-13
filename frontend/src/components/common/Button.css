@@ -1,0 +1,118 @@
+/* Base Button Styles */
+.mwms-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    /* Slightly rounded */
+    font-family: 'Inter', sans-serif;
+    /* Assuming Inter is used */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+}
+
+.mwms-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+/* Variants */
+.mwms-btn--primary {
+    background: linear-gradient(135deg, #FF6B00 0%, #FF4500 100%);
+    /* Orange gradient per screenshot/theme */
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+}
+
+.mwms-btn--primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FF8533 0%, #FF5719 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 69, 0, 0.4);
+}
+
+.mwms-btn--primary:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(255, 69, 0, 0.3);
+}
+
+.mwms-btn--secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary, #ffffff);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+.mwms-btn--secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mwms-btn--danger {
+    background: linear-gradient(135deg, #FF4B4B 0%, #CC0000 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+}
+
+.mwms-btn--danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FF6666 0%, #E60000 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4);
+}
+
+.mwms-btn--icon {
+    padding: 0.5rem;
+    border-radius: 50%;
+    aspect-ratio: 1;
+}
+
+/* Sizes */
+.mwms-btn--sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    height: 32px;
+}
+
+.mwms-btn--md {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.875rem;
+    height: 40px;
+}
+
+.mwms-btn--lg {
+    padding: 0.8rem 1.6rem;
+    font-size: 1rem;
+    height: 48px;
+}
+
+/* Icons */
+.mwms-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spinner */
+.mwms-btn-spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: mwms-spin 0.75s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes mwms-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

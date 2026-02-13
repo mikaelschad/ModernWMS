@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 import GlassCard from '../components/GlassCard'
+import Button from '../components/common/Button'
+import PermissionGate from '../components/common/PermissionGate'
 import './Facilities.css'
 
 const Facilities = () => {
     const { t } = useTranslation()
+    const { hasPermission } = useAuth()
     const [facilities, setFacilities] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -109,6 +113,7 @@ const Facilities = () => {
             setSuccessMsg(null); // Clear any previous success messages
         }
     }
+    const isDisabled = isEditing ? !hasPermission("FACILITY_UPDATE") : !hasPermission("FACILITY_CREATE")
 
     return (
         <div className="facilities-container">
@@ -121,111 +126,124 @@ const Facilities = () => {
             {successMsg && <div className="success-message">✅ {successMsg}</div>}
 
             <div className="facilities-grid-v2">
-                <div className="form-section-wide">
-                    <GlassCard title={isEditing ? `${t('edit')}: ${formData.id}` : t('initialize_facility')}>
-                        <div className="tab-navigation">
-                            <button className={activeFormTab === 'basic' ? 'active' : ''} onClick={() => setActiveFormTab('basic')}>{t('basic_info')}</button>
-                            <button className={activeFormTab === 'setup' ? 'active' : ''} onClick={() => setActiveFormTab('setup')}>{t('advanced_setup')}</button>
-                            <button className={activeFormTab === 'schedule' ? 'active' : ''} onClick={() => setActiveFormTab('schedule')}>{t('operations')}</button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="facility-form-grid">
-                            {activeFormTab === 'basic' && (
-                                <div className="form-tab-content grid-2-col">
-                                    <div className="form-group">
-                                        <label>{t('id')} (Primary Key)</label>
-                                        <input type="text" name="id" value={formData.id} onChange={handleInputChange} disabled={isEditing} placeholder="FAC01" className="glass-input" required />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('name')}</label>
-                                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder={t('name')} className="glass-input" required />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('manager')}</label>
-                                        <input type="text" name="manager" value={formData.manager} onChange={handleInputChange} placeholder={t('manager')} className="glass-input" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('status')}</label>
-                                        <select name="status" value={formData.status} onChange={handleInputChange} className="glass-input">
-                                            <option value="A">{t('active')}</option>
-                                            <option value="I">{t('inactive')}</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('phone')}</label>
-                                        <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('email')}</label>
-                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeFormTab === 'setup' && (
-                                <div className="form-tab-content grid-2-col">
-                                    <div className="form-group">
-                                        <label>{t('cross_dock_location')}</label>
-                                        <input type="text" name="crossDockLocation" value={formData.crossDockLocation} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('task_limit')}</label>
-                                        <input type="number" name="taskLimit" value={formData.taskLimit} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                    <div className="form-group checkbox-group">
-                                        <label>
-                                            <input type="checkbox" name="useLocationCheckdigit" checked={formData.useLocationCheckdigit === 'Y'} onChange={handleInputChange} />
-                                            {t('use_location_checkdigit')}
-                                        </label>
-                                    </div>
-                                    <div className="form-group checkbox-group">
-                                        <label>
-                                            <input type="checkbox" name="restrictPutaway" checked={formData.restrictPutaway === 'Y'} onChange={handleInputChange} />
-                                            {t('restrict_putaway')}
-                                        </label>
-                                    </div>
-                                    <div className="form-group full-width separator">
-                                        <label>{t('remit_to_info')}</label>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('remit_name')}</label>
-                                        <input type="text" name="remitName" value={formData.remitName} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>{t('remit_address')}</label>
-                                        <input type="text" name="remitAddress1" value={formData.remitAddress1} onChange={handleInputChange} className="glass-input" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeFormTab === 'schedule' && (
-                                <div className="form-tab-content">
-                                    <label className="section-label">{t('active_work_days')}</label>
-                                    <div className="days-grid">
-                                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
-                                            <div key={day} className="day-check">
-                                                <input
-                                                    type="checkbox"
-                                                    name={`work${day}In`}
-                                                    checked={formData[`work${day}In`] === 'Y'}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <span>{t(day)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="form-actions-row">
-                                <button type="submit" className="submit-btn">{isEditing ? t('save_changes') : t('initialize_facility')}</button>
-                                {isEditing && (
-                                    <button type="button" onClick={() => { setIsEditing(false); setFormData(initialForm) }} className="cancel-btn">{t('cancel')}</button>
-                                )}
+                <PermissionGate permission="FACILITY_READ">
+                    <div className="form-section-wide">
+                        <GlassCard title={isEditing ? (hasPermission("FACILITY_UPDATE") ? `${t('edit')}: ${formData.id}` : `${t('view')}: ${formData.id}`) : t('initialize_facility')}>
+                            <div className="tab-navigation">
+                                <button className={activeFormTab === 'basic' ? 'active' : ''} onClick={() => setActiveFormTab('basic')}>{t('basic_info')}</button>
+                                <button className={activeFormTab === 'setup' ? 'active' : ''} onClick={() => setActiveFormTab('setup')}>{t('advanced_setup')}</button>
+                                <button className={activeFormTab === 'schedule' ? 'active' : ''} onClick={() => setActiveFormTab('schedule')}>{t('operations')}</button>
                             </div>
-                        </form>
-                    </GlassCard>
-                </div>
+
+                            <form onSubmit={handleSubmit} className="facility-form-grid">
+                                {activeFormTab === 'basic' && (
+                                    <div className="form-tab-content grid-2-col">
+                                        <div className="form-group">
+                                            <label>{t('id')}</label>
+                                            <input type="text" name="id" value={formData.id} onChange={(e) => handleInputChange({ target: { name: 'id', value: e.target.value.toUpperCase() } })} disabled={isEditing} placeholder="FAC01" className="glass-input" style={{ textTransform: 'uppercase' }} required maxLength={20} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('name')}</label>
+                                            <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder={t('name')} className="glass-input" required maxLength={100} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('manager')}</label>
+                                            <input type="text" name="manager" value={formData.manager} onChange={handleInputChange} placeholder={t('manager')} className="glass-input" maxLength={100} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('status')}</label>
+                                            <select name="status" value={formData.status} onChange={handleInputChange} className="glass-input">
+                                                <option value="A">{t('active')}</option>
+                                                <option value="I">{t('inactive')}</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('phone')}</label>
+                                            <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className="glass-input" maxLength={50} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('email')}</label>
+                                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="glass-input" maxLength={100} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeFormTab === 'setup' && (
+                                    <div className="form-tab-content grid-2-col">
+                                        <div className="form-group">
+                                            <label>{t('cross_dock_location')}</label>
+                                            <input type="text" name="crossDockLocation" value={formData.crossDockLocation} onChange={handleInputChange} className="glass-input" maxLength={20} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('task_limit')}</label>
+                                            <input type="number" name="taskLimit" value={formData.taskLimit} onChange={handleInputChange} className="glass-input" />
+                                        </div>
+                                        <div className="form-group checkbox-group">
+                                            <label>
+                                                <input type="checkbox" name="useLocationCheckdigit" checked={formData.useLocationCheckdigit === 'Y'} onChange={handleInputChange} />
+                                                {t('use_location_checkdigit')}
+                                            </label>
+                                        </div>
+                                        <div className="form-group checkbox-group">
+                                            <label>
+                                                <input type="checkbox" name="restrictPutaway" checked={formData.restrictPutaway === 'Y'} onChange={handleInputChange} />
+                                                {t('restrict_putaway')}
+                                            </label>
+                                        </div>
+                                        <div className="form-group full-width separator">
+                                            <label>{t('remit_to_info')}</label>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('remit_name')}</label>
+                                            <input type="text" name="remitName" value={formData.remitName} onChange={handleInputChange} className="glass-input" maxLength={100} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>{t('remit_address')}</label>
+                                            <input type="text" name="remitAddress1" value={formData.remitAddress1} onChange={handleInputChange} className="glass-input" maxLength={100} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeFormTab === 'schedule' && (
+                                    <div className="form-tab-content">
+                                        <label className="section-label">{t('active_work_days')}</label>
+                                        <div className="days-grid">
+                                            {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
+                                                <div key={day} className="day-check">
+                                                    <input
+                                                        type="checkbox"
+                                                        name={`work${day}In`}
+                                                        checked={formData[`work${day}In`] === 'Y'}
+                                                        onChange={handleInputChange}
+                                                        disabled={isDisabled}
+                                                    />
+                                                    <span>{t(day)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="form-actions-row">
+                                    {!isDisabled && <Button type="submit" className="submit-btn">{isEditing ? t('save_changes') : t('initialize_facility')}</Button>}
+                                    {(isEditing || formData.id) && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditing(false)
+                                                setFormData(initialForm)
+                                            }}
+                                            variant="secondary"
+                                            className="cancel-btn"
+                                        >
+                                            {isEditing ? t('cancel') : t('clear')}
+                                        </Button>
+                                    )}
+                                </div>
+                            </form>
+                        </GlassCard>
+                    </div>
+                </PermissionGate>
 
                 <div className="list-section-wide">
                     <GlassCard title={t('synapse_network')}>
@@ -254,8 +272,24 @@ const Facilities = () => {
                                                 </span>
                                             </td>
                                             <td className="actions">
-                                                <button onClick={() => handleEdit(fac)} className="edit-btn">{t('edit')}</button>
-                                                <button onClick={() => handleDelete(fac.id)} className="delete-btn">{t('delete')}</button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => handleEdit(fac)}
+                                                    className="edit-btn"
+                                                >
+                                                    {hasPermission("FACILITY_UPDATE") ? t('edit') : t('view')}
+                                                </Button>
+                                                <PermissionGate permission="FACILITY_UPDATE">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="danger"
+                                                        onClick={() => handleDelete(fac.id)}
+                                                        className="delete-btn"
+                                                    >
+                                                        {t('delete')}
+                                                    </Button>
+                                                </PermissionGate>
                                             </td>
                                         </tr>
                                     ))}

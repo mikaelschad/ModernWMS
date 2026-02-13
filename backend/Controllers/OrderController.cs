@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.DTOs;
+using ModernWMS.Backend.Attributes;
 
 namespace ModernWMS.Backend.Controllers;
 
@@ -10,6 +11,7 @@ namespace ModernWMS.Backend.Controllers;
 public class OrderController : ControllerBase
 {
     [HttpPost("inbound")]
+    [HasPermission("ORDER_CREATE")]
     public IActionResult CreateInboundOrder([FromBody] InboundOrderDto order)
     {
         // Mock implementation for skeleton

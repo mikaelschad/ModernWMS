@@ -4,6 +4,7 @@ import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import LicensePlateForm from './LicensePlateForm'
 import { useFacility } from '../contexts/FacilityContext'
+import PermissionGate from '../components/common/PermissionGate'
 import './PlateLookup.css'
 
 const PlateLookup = () => {
@@ -279,9 +280,11 @@ const PlateLookup = () => {
             <h2>{t('license_plate_search')}</h2>
             <p>{t('plate_search_desc')}</p>
           </div>
-          <button className="create-btn" onClick={() => { setEditingPlate(null); setShowForm(true); }}>
-            + {t('new_license_plate')}
-          </button>
+          <PermissionGate permission="PLATE_CREATE">
+            <button className="create-btn" onClick={() => { setEditingPlate(null); setShowForm(true); }}>
+              + {t('new_license_plate')}
+            </button>
+          </PermissionGate>
         </div>
       </header>
 
@@ -524,8 +527,10 @@ const PlateLookup = () => {
               </div>
 
               <div className="card-actions">
-                <button onClick={() => handleEdit(selectedPlate)} className="edit-btn">{t('edit')}</button>
-                <button onClick={() => handleDelete(selectedPlate.id)} className="delete-btn">{t('delete')}</button>
+                <PermissionGate permission="PLATE_UPDATE">
+                  <button onClick={() => handleEdit(selectedPlate)} className="edit-btn">{t('edit')}</button>
+                  <button onClick={() => handleDelete(selectedPlate.id)} className="delete-btn">{t('delete')}</button>
+                </PermissionGate>
               </div>
             </GlassCard>
           </div>

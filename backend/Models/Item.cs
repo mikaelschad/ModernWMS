@@ -1,15 +1,30 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ModernWMS.Backend.Models;
 
+[Table("ITEM")]
 public class Item
 {
     public Item() { }
 
-    public string SKU { get; set; } = string.Empty;
+    [Key]
+    [Column("ITEM")]
+    [Required]
+    [MaxLength(30)]
+    public string Id { get; set; } = string.Empty; // Primary key: ITEM
+    
+    [MaxLength(50)]
+    public string? SKU { get; set; } // Attribute
     public string Description { get; set; } = string.Empty;
     public string? Abbreviation { get; set; }
-    public string UnitOfMeasure { get; set; } = "EA";
+    [Column("BASEUOM")]
+    public string BaseUOM { get; set; } = "EA";
     public string? ItemGroupId { get; set; }
-    public string? CustomerId { get; set; }
+    [Column("CUSTID")]
+    [Required]
+    [MaxLength(30)]
+    public string CustomerId { get; set; } = string.Empty;
     public string? RateGroup { get; set; }
     public string? ProductGroup { get; set; }
     public string? KitType { get; set; }
@@ -33,6 +48,20 @@ public class Item
     public decimal? Width { get; set; }
     public decimal? Height { get; set; }
     public decimal? Volume { get; set; }
+    
+    // Logistics
+    public string? CommodityCode { get; set; }
+    public string? CountryOfOrigin { get; set; }
+    public string? VelocityClass { get; set; }
+    
+    // Pallet Configuration
+    public int? Ti { get; set; } // Cases per layer
+    public int? Hi { get; set; } // Layers per pallet
+
+    // Replenishment
+    public int? MinQty { get; set; }
+    public int? MaxQty { get; set; }
+    public string? PickLocation { get; set; }
 
     public string Status { get; set; } = "A";
     public DateTime LastUpdate { get; set; }

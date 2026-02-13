@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../contexts/ToastContext';
 import GlassCard from './GlassCard';
 import './OrderEntry.css';
 
 const OrderEntry = () => {
     const { t } = useTranslation();
+    const { success } = useToast();
     const [formData, setFormData] = useState({
         customerId: '',
         orderNumber: '',
@@ -19,7 +21,7 @@ const OrderEntry = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Submitting Order:', formData);
-        alert(t('success_created', { item: t('order_number') }));
+        success(t('success_created', { item: t('order_number') }));
     };
 
     return (

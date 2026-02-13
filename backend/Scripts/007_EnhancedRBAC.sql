@@ -1,0 +1,93 @@
+
+-- Create PERMISSIONS table
+IF OBJECT_ID('PERMISSIONS', 'U') IS NULL
+BEGIN
+    CREATE TABLE PERMISSIONS (
+        PERMISSIONID NVARCHAR(100) PRIMARY KEY,
+        ENTITY NVARCHAR(50) NOT NULL,
+        OPERATION NVARCHAR(50) NOT NULL,
+        DESCRIPTION NVARCHAR(255)
+    );
+END
+GO
+
+-- Create ROLE_PERMISSIONS table
+IF OBJECT_ID('ROLE_PERMISSIONS', 'U') IS NULL
+BEGIN
+    CREATE TABLE ROLE_PERMISSIONS (
+        ROLEID NVARCHAR(50),
+        PERMISSIONID NVARCHAR(100),
+        PRIMARY KEY (ROLEID, PERMISSIONID),
+        FOREIGN KEY (ROLEID) REFERENCES ROLES(ROLEID) ON DELETE CASCADE,
+        FOREIGN KEY (PERMISSIONID) REFERENCES PERMISSIONS(PERMISSIONID) ON DELETE CASCADE
+    );
+END
+GO
+
+-- Seed Permissions (Idempotent)
+CREATE PROCEDURE #AddPermission 
+    @entity NVARCHAR(50), 
+    @operation NVARCHAR(50), 
+    @desc NVARCHAR(255)
+AS
+BEGIN
+    DECLARE @pid NVARCHAR(100) = @entity + '_' + @operation;
+    IF NOT EXISTS (SELECT 1 FROM PERMISSIONS WHERE PERMISSIONID = @pid)
+        INSERT INTO PERMISSIONS (PERMISSIONID, ENTITY, OPERATION, DESCRIPTION) 
+        VALUES (@pid, @entity, @operation, @desc);
+END
+GO
+
+-- Entities: USER, ROLE, ITEM, FACILITY, CUSTOMER, ITEMGROUP, ZONE, SECTION, LOCATION, CONSIGNEE, LICENSEPLATE, INVENTORY
+EXEC #AddPermission 'USER', 'READ', 'Read access to users';
+EXEC #AddPermission 'USER', 'CREATE', 'Create new users';
+EXEC #AddPermission 'USER', 'UPDATE', 'Update existing users';
+EXEC #AddPermission 'USER', 'DISABLE', 'Enable/Disable users';
+
+EXEC #AddPermission 'ITEM', 'READ', 'Read access to items';
+EXEC #AddPermission 'ITEM', 'CREATE', 'Create new items';
+EXEC #AddPermission 'ITEM', 'UPDATE', 'Update existing items';
+EXEC #AddPermission 'ITEM', 'DISABLE', 'Enable/Disable items';
+EXEC #AddPermission 'ITEM', 'PRINT', 'Print item labels';
+
+EXEC #AddPermission 'FACILITY', 'READ', 'Read access to facilities';
+EXEC #AddPermission 'FACILITY', 'CREATE', 'Create new facilities';
+EXEC #AddPermission 'FACILITY', 'UPDATE', 'Update existing facilities';
+
+EXEC #AddPermission 'CUSTOMER', 'READ', 'Read access to customers';
+EXEC #AddPermission 'CUSTOMER', 'CREATE', 'Create new customers';
+EXEC #AddPermission 'CUSTOMER', 'UPDATE', 'Update existing customers';
+
+EXEC #AddPermission 'LICENSEPLATE', 'READ', 'Read access to license plates';
+EXEC #AddPermission 'LICENSEPLATE', 'CREATE', 'Create/Receive license plates';
+EXEC #AddPermission 'LICENSEPLATE', 'UPDATE', 'Update license plates';
+EXEC #AddPermission 'LICENSEPLATE', 'PRINT', 'Print LP labels';
+
+EXEC #AddPermission 'INVENTORY', 'READ', 'Read access to inventory';
+EXEC #AddPermission 'INVENTORY', 'ADJUST', 'Adjust inventory levels';
+EXEC #AddPermission 'INVENTORY', 'MOVE', 'Move inventory between locations';
+
+DROP PROCEDURE #AddPermission;
+GO
+
+-- Seed Role Permissions for ADMIN
+-- ADMIN gets everything
+INSERT INTO ROLE_PERMISSIONS (ROLEID, PERMISSIONID)
+SELECT 'ADMIN', PERMISSIONID FROM PERMISSIONS
+WHERE NOT EXISTS (SELECT 1 FROM ROLE_PERMISSIONS WHERE ROLEID = 'ADMIN' AND PERMISSIONID = PERMISSIONS.PERMISSIONID);
+GO
+
+-- Seed Role Permissions for OPERATOR
+-- OPERATORS can read most things and manage inventory/LPs
+INSERT INTO ROLE_PERMISSIONS (ROLEID, PERMISSIONID)
+SELECT 'OPERATOR', PERMISSIONID FROM PERMISSIONS
+WHERE PERMISSIONID IN ('ITEM_READ', 'ITEM_PRINT', 'FACILITY_READ', 'CUSTOMER_READ', 'LICENSEPLATE_READ', 'LICENSEPLATE_CREATE', 'LICENSEPLATE_UPDATE', 'LICENSEPLATE_PRINT', 'INVENTORY_READ', 'INVENTORY_MOVE')
+AND NOT EXISTS (SELECT 1 FROM ROLE_PERMISSIONS WHERE ROLEID = 'OPERATOR' AND PERMISSIONID = PERMISSIONS.PERMISSIONID);
+GO
+
+-- Seed Role Permissions for VIEWER
+INSERT INTO ROLE_PERMISSIONS (ROLEID, PERMISSIONID)
+SELECT 'VIEWER', PERMISSIONID FROM PERMISSIONS
+WHERE OPERATION = 'READ'
+AND NOT EXISTS (SELECT 1 FROM ROLE_PERMISSIONS WHERE ROLEID = 'VIEWER' AND PERMISSIONID = PERMISSIONS.PERMISSIONID);
+GO

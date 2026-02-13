@@ -1,0 +1,31 @@
+-- Phase 2: Advanced Inventory Features
+
+-- 1. Create ITEMALIAS table
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ITEMALIAS' AND xtype='U')
+BEGIN
+    CREATE TABLE ITEMALIAS (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+        ItemId NVARCHAR(30) NOT NULL, -- Matched to ITEM.ITEM
+        Alias NVARCHAR(50) NOT NULL,
+        Type NVARCHAR(20) NOT NULL, -- UPC, EAN, VENDOR, CUSTOM
+        CustomerId NVARCHAR(30) NOT NULL, -- Matched to ITEM.CUSTID
+        LastUpdate DATETIME DEFAULT GETDATE(),
+        LastUser NVARCHAR(50) DEFAULT 'SYSTEM',
+        CONSTRAINT FK_ITEMALIAS_ITEM FOREIGN KEY (ItemId, CustomerId) REFERENCES ITEM(ITEM, CUSTID) ON DELETE CASCADE
+    );
+END
+
+-- 2. Add Replenishment fields to ITEM
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'ITEM') AND name = 'MinQty')
+BEGIN
+    ALTER TABLE ITEM ADD MinQty INT;
+    ALTER TABLE ITEM ADD MaxQty INT;
+    ALTER TABLE ITEM ADD PickLocation NVARCHAR(20);
+END
+
+-- 3. Add Inventory Mix Rules to CUSTOMER
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'CUSTOMER') AND name = 'AllowMixSKU')
+BEGIN
+    ALTER TABLE CUSTOMER ADD AllowMixSKU BIT DEFAULT 0;
+    ALTER TABLE CUSTOMER ADD AllowMixLot BIT DEFAULT 0;
+END

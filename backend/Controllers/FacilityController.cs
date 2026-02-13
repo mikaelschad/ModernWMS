@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.Models;
 using ModernWMS.Backend.Repositories;
+using ModernWMS.Backend.Attributes;
 
 namespace ModernWMS.Backend.Controllers;
 
@@ -20,11 +21,20 @@ public class FacilityController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission("FACILITY_READ")]
     public async Task<ActionResult<IEnumerable<Facility>>> GetAll()
     {
         try 
         {
             var facilities = await _repository.GetAllAsync();
+            
+            // Filter by user's accessible facilities (from middleware)
+            var accessibleFacilities = HttpContext.Items["AccessibleFacilities"] as List<string>;
+            if (accessibleFacilities != null && accessibleFacilities.Count > 0 && !accessibleFacilities.Contains("ALL"))
+            {
+                facilities = facilities.Where(f => accessibleFacilities.Contains(f.Id)).ToList();
+            }
+            
             return Ok(facilities);
         }
         catch (Exception ex)
@@ -35,6 +45,7 @@ public class FacilityController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission("FACILITY_READ")]
     public async Task<ActionResult<Facility>> GetById(string id)
     {
         try
@@ -51,6 +62,7 @@ public class FacilityController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission("FACILITY_CREATE")]
     public async Task<ActionResult<Facility>> Create([FromBody] Facility facility)
     {
         try
@@ -68,6 +80,7 @@ public class FacilityController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HasPermission("FACILITY_UPDATE")]
     public async Task<IActionResult> Update(string id, [FromBody] Facility facility)
     {
         try
@@ -87,6 +100,7 @@ public class FacilityController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission("FACILITY_UPDATE")]
     public async Task<IActionResult> Delete(string id)
     {
         try
@@ -95,6 +109,11 @@ public class FacilityController : ControllerBase
             if (!success) return NotFound();
             
             return NoContent();
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 547)
+        {
+            _logger.LogWarning(ex, "Attempted to delete facility {Id} which is in use.", id);
+            return Conflict($"Facility '{id}' is currently in use and cannot be deleted.");
         }
         catch (Exception ex)
         {

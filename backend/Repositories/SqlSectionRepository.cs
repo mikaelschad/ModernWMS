@@ -25,12 +25,13 @@ public class SqlSectionRepository : ISectionRepository
         return lst;
     }
 
-    public async Task<Section?> GetByIdAsync(string id)
+    public async Task<Section?> GetByIdAsync(string id, string facilityId)
     {
         using var c = new SqlConnection(_conn);
         await c.OpenAsync();
-        using var cmd = new SqlCommand("SELECT * FROM SECTION WHERE SECTION = @id", c);
+        using var cmd = new SqlCommand("SELECT * FROM SECTION WHERE SECTION = @id AND FACILITY = @fac", c);
         cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@fac", facilityId);
         using var r = await cmd.ExecuteReaderAsync();
         if (await r.ReadAsync())
             return Map(r);
@@ -49,7 +50,7 @@ public class SqlSectionRepository : ISectionRepository
         cmd.Parameters.AddWithValue("@fac", s.FacilityId);
         cmd.Parameters.AddWithValue("@desc", (object?)s.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@st", s.Status);
-        cmd.Parameters.AddWithValue("@usr", "SYSTEM");
+        cmd.Parameters.AddWithValue("@usr", s.LastUser ?? "SYSTEM");
         
         await cmd.ExecuteNonQueryAsync();
         return s.Id;
@@ -61,25 +62,26 @@ public class SqlSectionRepository : ISectionRepository
         await c.OpenAsync();
         using var cmd = new SqlCommand(@"
             UPDATE SECTION 
-            SET FACILITY = @fac, DESCRIPTION = @desc, STATUS = @st, 
+            SET DESCRIPTION = @desc, STATUS = @st, 
                 LASTUPDATE = GETDATE(), LASTUSER = @usr 
-            WHERE SECTION = @id", c);
+            WHERE SECTION = @id AND FACILITY = @fac", c);
         
         cmd.Parameters.AddWithValue("@id", s.Id);
         cmd.Parameters.AddWithValue("@fac", s.FacilityId);
         cmd.Parameters.AddWithValue("@desc", (object?)s.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@st", s.Status);
-        cmd.Parameters.AddWithValue("@usr", "SYSTEM");
+        cmd.Parameters.AddWithValue("@usr", s.LastUser ?? "SYSTEM");
         
         return await cmd.ExecuteNonQueryAsync() > 0;
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id, string facilityId)
     {
         using var c = new SqlConnection(_conn);
         await c.OpenAsync();
-        using var cmd = new SqlCommand("UPDATE SECTION SET STATUS = 'I', LASTUPDATE = GETDATE() WHERE SECTION = @id", c);
+        using var cmd = new SqlCommand("DELETE FROM SECTION WHERE SECTION = @id AND FACILITY = @fac", c);
         cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@fac", facilityId);
         return await cmd.ExecuteNonQueryAsync() > 0;
     }
 

@@ -3,23 +3,30 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: var(--bg-color);
+    background-color: var(--background);
+    background-image:
+        radial-gradient(at 0% 0%, var(--gradient-overlay-1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, var(--gradient-overlay-2) 0, transparent 50%),
+        radial-gradient(at 100% 0%, var(--gradient-overlay-3) 0, transparent 50%);
 }
 
 .login-form {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: var(--surface);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
     width: 100%;
     max-width: 400px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
 }
 
 .login-form h2 {
     text-align: center;
     margin-bottom: 2rem;
-    color: var(--text-primary);
+    color: var(--text-headers);
+    font-weight: 800;
+    letter-spacing: -0.025em;
 }
 
 .form-group {
@@ -29,39 +36,55 @@
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--text-secondary);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
     background: var(--input-bg);
-    color: var(--text-primary);
+    color: var(--text);
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--gradient-overlay-1);
 }
 
 .login-button {
     width: 100%;
-    padding: 0.75rem;
-    background: var(--accent-color);
+    padding: 0.875rem;
+    background: var(--primary);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     cursor: pointer;
     font-size: 1rem;
-    transition: opacity 0.2s;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-top: 1rem;
 }
 
 .login-button:hover {
-    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.1);
 }
 
 .error-message {
-    background: rgba(220, 38, 38, 0.1);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
     padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
     text-align: center;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-size: 0.9rem;
 }

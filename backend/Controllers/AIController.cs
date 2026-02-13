@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.Services;
+using ModernWMS.Backend.Attributes;
 
 namespace ModernWMS.Backend.Controllers;
 
@@ -17,6 +18,7 @@ public class AIController : ControllerBase
     }
 
     [HttpGet("forecast/{sku}")]
+    [HasPermission("AI_READ")]
     public async Task<ActionResult<double>> GetForecast(string sku, [FromQuery] DateTime targetDate)
     {
         var forecast = await _aiService.ForecastDemandAsync(sku, targetDate);
@@ -24,6 +26,7 @@ public class AIController : ControllerBase
     }
 
     [HttpPost("optimize-path")]
+    [HasPermission("AI_READ")]
     public async Task<ActionResult<List<string>>> OptimizePath([FromBody] List<string> orderIds, [FromQuery] string facilityId = "FAC01")
     {
         var path = await _aiService.OptimizePickPathAsync(facilityId, orderIds);

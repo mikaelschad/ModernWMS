@@ -182,13 +182,14 @@ public class LegacyOracleLicensePlateRepository : ILicensePlateRepository
         return facilities;
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id, string lastUser)
     {
         using var conn = new OracleConnection(_connectionString);
         await conn.OpenAsync();
-        string query = "UPDATE PLATE SET STATUS = 'X', LASTUPDATE = CURRENT_DATE WHERE LPID = :id";
+        string query = "UPDATE PLATE SET STATUS = 'X', LASTUPDATE = CURRENT_DATE, LASTUSER = :user WHERE LPID = :id";
         using var cmd = new OracleCommand(query, conn);
         cmd.BindByName = true;
+        cmd.Parameters.Add("user", OracleDbType.Varchar2).Value = lastUser;
         cmd.Parameters.Add("id", OracleDbType.Varchar2).Value = id;
         int affected = await cmd.ExecuteNonQueryAsync();
         return affected > 0;

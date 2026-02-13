@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
+import { API_ENDPOINTS } from '../config/api'
 
 const FacilityContext = createContext()
 
@@ -12,43 +14,47 @@ export const useFacility = () => {
 }
 
 export const FacilityProvider = ({ children }) => {
+    const { token } = useAuth()
     const [currentFacility, setCurrentFacility] = useState(null)
     const [facilities, setFacilities] = useState([])
     const [loading, setLoading] = useState(true)
 
-    // Load facilities from API
-    useEffect(() => {
-        const fetchFacilities = async () => {
-            try {
-                const response = await axios.get('http://localhost:5017/api/Facility')
-                const activeFacilities = response.data.filter(f => f.status === 'A')
-                setFacilities(activeFacilities)
-
-                // Load saved facility from localStorage
-                const savedFacilityId = localStorage.getItem('currentFacilityId')
-                if (savedFacilityId) {
-                    const savedFacility = activeFacilities.find(f => f.id === savedFacilityId)
-                    if (savedFacility) {
-                        setCurrentFacility(savedFacility)
-                    } else if (activeFacilities.length > 0) {
-                        // If saved facility not found, use first available
-                        setCurrentFacility(activeFacilities[0])
-                    }
-                } else if (activeFacilities.length > 0) {
-                    // No saved facility, use first available
-                    setCurrentFacility(activeFacilities[0])
-                }
-            } catch (error) {
-                console.error('Failed to fetch facilities:', error)
-            } finally {
-                setLoading(false)
-            }
+    const fetchFacilities = async () => {
+        if (!token) {
+            setLoading(false);
+            return;
         }
 
-        fetchFacilities()
-    }, [])
+        try {
+            const response = await axios.get(API_ENDPOINTS.FACILITIES, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            const activeFacilities = response.data.filter(f => f.status === 'A')
+            setFacilities(activeFacilities)
 
-    // Persist facility selection to localStorage
+            // Load saved facility from localStorage
+            const savedFacilityId = localStorage.getItem('currentFacilityId')
+            if (savedFacilityId) {
+                const savedFacility = activeFacilities.find(f => f.id === savedFacilityId)
+                if (savedFacility) {
+                    setCurrentFacility(savedFacility)
+                } else if (activeFacilities.length > 0) {
+                    setCurrentFacility(activeFacilities[0])
+                }
+            } else if (activeFacilities.length > 0) {
+                setCurrentFacility(activeFacilities[0])
+            }
+        } catch (error) {
+            console.error('Failed to fetch facilities:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchFacilities()
+    }, [token])
+
     const selectFacility = (facility) => {
         setCurrentFacility(facility)
         if (facility) {

@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../contexts/ToastContext';
 import './Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login } = useAuth();
+    const { error: showError } = useToast();
     const navigate = useNavigate();
 
+    console.log('Login component rendering');
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        console.log('Login submit', username, password);
         const success = await login(username, password);
         if (success) {
             navigate('/');
         } else {
-            setError('Invalid username or password');
+            showError('Invalid username or password');
         }
     };
 
@@ -25,7 +27,6 @@ const Login = () => {
         <div className="login-container">
             <form onSubmit={handleSubmit} className="login-form">
                 <h2>ModernWMS Login</h2>
-                {error && <div className="error-message">{error}</div>}
                 <div className="form-group">
                     <label>Username</label>
                     <input

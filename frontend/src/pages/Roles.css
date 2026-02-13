@@ -1,0 +1,206 @@
+.roles-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    height: calc(100vh - 200px);
+}
+
+.roles-list-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.roles-list {
+    margin-top: 15px;
+    overflow-y: auto;
+}
+
+.role-item {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.role-item:hover {
+    background: var(--input-bg);
+    transform: translateX(5px);
+}
+
+.role-item.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.role-item.active .role-desc {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.role-id {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.role-desc {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.permissions-panel-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.permissions-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.permission-group {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    border: 1px solid var(--border);
+}
+
+.permission-group h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+.permission-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.permission-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: var(--transition);
+    color: var(--text);
+}
+
+.permission-checkbox:hover {
+    background: var(--input-bg);
+}
+
+.permission-checkbox input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+    flex-shrink: 0;
+    background: var(--input-bg);
+}
+
+.permission-checkbox input:checked+.checkbox-custom {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.permission-checkbox input:checked+.checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 10px;
+}
+
+.permission-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.op-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--secondary);
+    opacity: 0.8;
+}
+
+.op-desc {
+    font-size: 0.85rem;
+}
+
+.panel-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.save-btn:hover:not(:disabled) {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Scrollbar styling */
+.roles-list::-webkit-scrollbar,
+.permissions-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.roles-list::-webkit-scrollbar-track,
+.permissions-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.roles-list::-webkit-scrollbar-thumb,
+.permissions-grid::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+.roles-list::-webkit-scrollbar-thumb:hover,
+.permissions-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}

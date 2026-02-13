@@ -1,0 +1,90 @@
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: min(500px, calc(100vw - 48px));
+    /* Responsive max-width */
+    padding: 16px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ... keyframes ... */
+
+/* ... toast types ... */
+
+.toast-icon {
+    font-size: 24px;
+    font-weight: bold;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+    word-break: break-word;
+    /* Break long words */
+    overflow-wrap: break-word;
+    /* Standard property */
+    min-width: 0;
+    /* Allow flex item to shrink below content size if needed */
+}
+
+.toast-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: inherit;
+    font-size: 24px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.toast-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Container for multiple toasts */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.toast-container .toast {
+    pointer-events: auto;
+    position: relative;
+    top: auto;
+    right: auto;
+}

@@ -61,7 +61,7 @@ const Dashboard = () => {
                                     <td style={{ padding: '0.75rem 0', fontWeight: '500' }}>{item.sku}</td>
                                     <td>{item.location}</td>
                                     <td>{item.facilityId}</td>
-                                    <td style={{ color: '#fff' }}>{item.quantity}</td>
+                                    <td style={{ color: 'var(--primary)', fontWeight: '700' }}>{item.quantity}</td>
                                 </tr>
                             ))}
                         </tbody>

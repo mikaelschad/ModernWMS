@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ModernWMS.Backend.DTOs;
+using ModernWMS.Backend.Attributes;
 
 namespace ModernWMS.Backend.Controllers;
 
@@ -17,6 +18,7 @@ public class InventoryController : ControllerBase
     }
 
     [HttpGet("summary")]
+    [HasPermission("INVENTORY_READ")]
     public async Task<ActionResult<IEnumerable<InventoryItemDto>>> GetSummary()
     {
         var legacyItems = await _legacyRepo.GetLegacyInventoryAsync();

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import GlassCard from '../components/GlassCard'
+import PermissionGate from '../components/common/PermissionGate'
 import '../styles/master-data.css'
 
 export default function Consignees() {
@@ -67,76 +68,109 @@ export default function Consignees() {
 
     return (
         <div className="master-data-page">
-            <h1>{t('consignees')}</h1>
+            <header className="page-header">
+                <h2>{t('consignees')}</h2>
+                <p>{t('consignees_desc', 'Manage your consignee master data')}</p>
+            </header>
 
-            {error && <div className="error-msg">{error}</div>}
+            {error && <div className="error-msg">{typeof error === 'object' ? JSON.stringify(error) : error}</div>}
             {successMsg && <div className="success-msg">{successMsg}</div>}
 
-            <GlassCard title={isEditing ? t('edit') : t('create')}>
-                <form onSubmit={handleSubmit} className="master-form">
-                    <input
-                        type="text"
-                        placeholder={`${t('id')} *`}
-                        value={formData.id}
-                        onChange={e => setFormData({ ...formData, id: e.target.value })}
-                        required
-                        disabled={isEditing}
-                    />
-                    <input
-                        type="text"
-                        placeholder={`${t('name')} *`}
-                        value={formData.name}
-                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder={t('address')}
-                        value={formData.address1}
-                        onChange={e => setFormData({ ...formData, address1: e.target.value })}
-                    />
-                    <input
-                        type="text"
-                        placeholder={t('city')}
-                        value={formData.city}
-                        onChange={e => setFormData({ ...formData, city: e.target.value })}
-                    />
-                    <input
-                        type="text"
-                        placeholder={t('state')}
-                        value={formData.state}
-                        onChange={e => setFormData({ ...formData, state: e.target.value })}
-                    />
-                    <input
-                        type="text"
-                        placeholder={t('phone')}
-                        value={formData.phone}
-                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                    <input
-                        type="email"
-                        placeholder={t('email')}
-                        value={formData.email}
-                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    />
+            <PermissionGate permission={isEditing ? "CONSIGNEE_UPDATE" : "CONSIGNEE_CREATE"}>
+                <GlassCard title={isEditing ? t('edit') : t('create')}>
+                    <form onSubmit={handleSubmit} className="master-form">
+                        <div className="form-group">
+                            <label>{t('id')}</label>
+                            <input
+                                type="text"
+                                placeholder={`${t('id')} *`}
+                                value={formData.id}
+                                onChange={e => setFormData({ ...formData, id: e.target.value.toUpperCase() })}
+                                required
+                                disabled={isEditing}
+                                maxLength={30}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('name')}</label>
+                            <input
+                                type="text"
+                                placeholder={`${t('name')} *`}
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                required
+                                maxLength={100}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('address')}</label>
+                            <input
+                                type="text"
+                                placeholder={t('address')}
+                                value={formData.address1}
+                                onChange={e => setFormData({ ...formData, address1: e.target.value })}
+                                maxLength={100}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('city')}</label>
+                            <input
+                                type="text"
+                                placeholder={t('city')}
+                                value={formData.city}
+                                onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                maxLength={50}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('state')}</label>
+                            <input
+                                type="text"
+                                placeholder={t('state')}
+                                value={formData.state}
+                                onChange={e => setFormData({ ...formData, state: e.target.value })}
+                                maxLength={50}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('phone')}</label>
+                            <input
+                                type="text"
+                                placeholder={t('phone')}
+                                value={formData.phone}
+                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                maxLength={50}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('email')}</label>
+                            <input
+                                type="email"
+                                placeholder={t('email')}
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                maxLength={100}
+                            />
+                        </div>
 
-                    <div className="form-actions">
-                        <button type="submit" className="btn-primary">{isEditing ? t('update') : t('create')}</button>
-                        {isEditing && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setFormData(init)
-                                    setIsEditing(false)
-                                }}
-                                className="btn-secondary"
-                            >
-                                {t('cancel')}
-                            </button>
-                        )}
-                    </div>
-                </form>
-            </GlassCard>
+                        <div className="form-actions">
+                            <button type="submit" className="btn-primary">{isEditing ? t('update') : t('create')}</button>
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData(init)
+                                        setIsEditing(false)
+                                    }}
+                                    className="btn-secondary"
+                                >
+                                    {t('cancel')}
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </GlassCard>
+            </PermissionGate>
 
             <GlassCard title={`${t('consignees')} (${items.length})`}>
                 <div className="master-table">
@@ -160,8 +194,10 @@ export default function Consignees() {
                                     <td>{item.state}</td>
                                     <td>{item.phone}</td>
                                     <td className="actions">
-                                        <button onClick={() => handleEdit(item)} className="btn-edit">{t('edit')}</button>
-                                        <button onClick={() => handleDelete(item.id)} className="btn-delete">{t('delete')}</button>
+                                        <PermissionGate permission="CONSIGNEE_UPDATE">
+                                            <button onClick={() => handleEdit(item)} className="btn-edit">{t('edit')}</button>
+                                            <button onClick={() => handleDelete(item.id)} className="btn-delete">{t('delete')}</button>
+                                        </PermissionGate>
                                     </td>
                                 </tr>
                             ))}

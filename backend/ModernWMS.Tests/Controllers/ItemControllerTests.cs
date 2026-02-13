@@ -41,7 +41,7 @@ public class ItemControllerTests
     public async Task GetById_ReturnsOkResult_WhenItemExists()
     {
         // Arrange
-        var item = new Item { SKU = "ITEM1" };
+        var item = new Item { Id = "ITEM1", SKU = "ITEM1" };
         _mockRepo.Setup(repo => repo.GetByIdAsync("ITEM1")).ReturnsAsync(item);
 
         // Act
@@ -70,7 +70,7 @@ public class ItemControllerTests
     public async Task Create_ReturnsCreatedAtAction_WhenItemIsValid()
     {
         // Arrange
-        var item = new Item { SKU = "ITEM1", Description = "Test Item" };
+        var item = new Item { Id = "ITEM1", SKU = "ITEM1", Description = "Test Item" };
         _mockRepo.Setup(repo => repo.CreateAsync(item)).ReturnsAsync("ITEM1");
 
         // Act
@@ -80,28 +80,28 @@ public class ItemControllerTests
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         Assert.Equal(nameof(ItemController.GetById), createdResult.ActionName);
         var returnItem = Assert.IsType<Item>(createdResult.Value);
-        Assert.Equal("ITEM1", returnItem.SKU);
+        Assert.Equal("ITEM1", returnItem.Id);
     }
 
     [Fact]
     public async Task Create_ReturnsBadRequest_WhenSkuIsMissing()
     {
         // Arrange
-        var item = new Item { Description = "Test Item" }; // Missing SKU
+        var item = new Item { Description = "Test Item" }; // Missing ITEM (Id)
 
         // Act
         var result = await _controller.Create(item);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("SKU is required", badRequestResult.Value);
+        Assert.Equal("ITEM (Id) is required", badRequestResult.Value);
     }
 
     [Fact]
     public async Task Update_ReturnsNoContent_WhenUpdateIsSuccessful()
     {
         // Arrange
-        var item = new Item { SKU = "ITEM1", Description = "Updated Item" };
+        var item = new Item { Id = "ITEM1", SKU = "ITEM1", Description = "Updated Item" };
         _mockRepo.Setup(repo => repo.UpdateAsync(item)).ReturnsAsync(true);
 
         // Act
@@ -115,21 +115,21 @@ public class ItemControllerTests
     public async Task Update_ReturnsBadRequest_WhenSkuMismatch()
     {
         // Arrange
-        var item = new Item { SKU = "ITEM2" };
+        var item = new Item { Id = "ITEM2", SKU = "ITEM2" };
 
         // Act
         var result = await _controller.Update("ITEM1", item);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("SKU mismatch", badRequestResult.Value);
+        Assert.Equal("ID mismatch", badRequestResult.Value);
     }
 
     [Fact]
     public async Task Update_ReturnsNotFound_WhenItemDoesNotExist()
     {
         // Arrange
-        var item = new Item { SKU = "ITEM1" };
+        var item = new Item { Id = "ITEM1", SKU = "ITEM1" };
         _mockRepo.Setup(repo => repo.UpdateAsync(item)).ReturnsAsync(false);
 
         // Act
@@ -143,7 +143,7 @@ public class ItemControllerTests
     public async Task Delete_ReturnsNoContent_WhenDeleteIsSuccessful()
     {
         // Arrange
-        _mockRepo.Setup(repo => repo.DeleteAsync("ITEM1")).ReturnsAsync(true);
+        _mockRepo.Setup(repo => repo.DeleteAsync("ITEM1", It.IsAny<string>())).ReturnsAsync(true);
 
         // Act
         var result = await _controller.Delete("ITEM1");
@@ -156,7 +156,7 @@ public class ItemControllerTests
     public async Task Delete_ReturnsNotFound_WhenItemDoesNotExist()
     {
         // Arrange
-        _mockRepo.Setup(repo => repo.DeleteAsync("ITEM1")).ReturnsAsync(false);
+        _mockRepo.Setup(repo => repo.DeleteAsync("ITEM1", It.IsAny<string>())).ReturnsAsync(false);
 
         // Act
         var result = await _controller.Delete("ITEM1");

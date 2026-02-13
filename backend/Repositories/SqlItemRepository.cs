@@ -25,13 +25,14 @@ public class SqlItemRepository : IItemRepository
         return items;
     }
 
-    public async Task<Item?> GetByIdAsync(string sku)
+    public async Task<Item?> GetByIdAsync(string id, string customerId)
     {
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
-        var query = "SELECT * FROM ITEM WHERE SKU = @sku";
+        var query = "SELECT * FROM ITEM WHERE ITEM = @id AND CUSTID = @cust";
         using var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@sku", sku);
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@cust", customerId);
         using var reader = await cmd.ExecuteReaderAsync();
         if (await reader.ReadAsync()) return MapItem(reader);
         return null;
@@ -42,26 +43,31 @@ public class SqlItemRepository : IItemRepository
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
         var query = @"INSERT INTO ITEM (
-                        SKU, DESCRIPTION, ABBREVIATION, UNITOFMEASURE, ITEMGROUP, CUSTID, 
+                        ITEM, SKU, DESCRIPTION, ABBREVIATION, BASEUOM, ITEMGROUP, CUSTID, 
                         RATEGROUP, PRODUCTGROUP, KITTYPE,
                         REQUIRECYCLECOUNT, REQUIRELOTNUMBER, REQUIRESERIALNUMBER, 
                         REQUIREMANUFACTUREDATE, REQUIREEXPIRATIONDATE,
                         ISHAZARDOUS, UNNUMBER, HAZARDCLASS, PACKINGGROUP,
                         WEIGHT, LENGTH, WIDTH, HEIGHT, VOLUME, 
+                        COMMODITYCODE, COUNTRYOFORIGIN, VELOCITYCLASS, TI, HI,
+                        MINQTY, MAXQTY, PICKLOCATION,
                         STATUS, LASTUPDATE, LASTUSER) 
                      VALUES (
-                        @sku, @desc, @abbr, @uom, @grp, @cust, 
+                        @id, @sku, @desc, @abbr, @uom, @grp, @cust, 
                         @rate, @prod, @kit,
                         @cycle, @lot, @serial, 
                         @mfg, @exp,
                         @haz, @un, @hclass, @pgroup,
                         @wgt, @len, @wid, @hgt, @vol, 
+                        @code, @origin, @vel, @ti, @hi,
+                        @min, @max, @pick,
                         @status, GETDATE(), @user)";
         using var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@sku", item.SKU);
+        cmd.Parameters.AddWithValue("@id", item.Id);
+        cmd.Parameters.AddWithValue("@sku", (object?)item.SKU ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@desc", item.Description);
         cmd.Parameters.AddWithValue("@abbr", (object?)item.Abbreviation ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@uom", item.UnitOfMeasure);
+        cmd.Parameters.AddWithValue("@uom", item.BaseUOM);
         cmd.Parameters.AddWithValue("@grp", (object?)item.ItemGroupId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@cust", (object?)item.CustomerId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@rate", (object?)item.RateGroup ?? DBNull.Value);
@@ -81,10 +87,21 @@ public class SqlItemRepository : IItemRepository
         cmd.Parameters.AddWithValue("@wid", (object?)item.Width ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@hgt", (object?)item.Height ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@vol", (object?)item.Volume ?? DBNull.Value);
+        
+        cmd.Parameters.AddWithValue("@code", (object?)item.CommodityCode ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@origin", (object?)item.CountryOfOrigin ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@vel", (object?)item.VelocityClass ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@ti", (object?)item.Ti ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@hi", (object?)item.Hi ?? DBNull.Value);
+
+        cmd.Parameters.AddWithValue("@min", (object?)item.MinQty ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@max", (object?)item.MaxQty ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@pick", (object?)item.PickLocation ?? DBNull.Value);
+
         cmd.Parameters.AddWithValue("@status", item.Status);
-        cmd.Parameters.AddWithValue("@user", "SYSTEM");
+        cmd.Parameters.AddWithValue("@user", (object?)item.LastUser ?? "SYSTEM");
         await cmd.ExecuteNonQueryAsync();
-        return item.SKU;
+        return item.Id;
     }
 
     public async Task<bool> UpdateAsync(Item item)
@@ -92,19 +109,22 @@ public class SqlItemRepository : IItemRepository
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
         var query = @"UPDATE ITEM SET 
-                        DESCRIPTION=@desc, ABBREVIATION=@abbr, UNITOFMEASURE=@uom, 
-                        ITEMGROUP=@grp, CUSTID=@cust, RATEGROUP=@rate, PRODUCTGROUP=@prod, KITTYPE=@kit,
+                        SKU=@sku, DESCRIPTION=@desc, ABBREVIATION=@abbr, BASEUOM=@uom, 
+                        ITEMGROUP=@grp, RATEGROUP=@rate, PRODUCTGROUP=@prod, KITTYPE=@kit,
                         REQUIRECYCLECOUNT=@cycle, REQUIRELOTNUMBER=@lot, REQUIRESERIALNUMBER=@serial, 
                         REQUIREMANUFACTUREDATE=@mfg, REQUIREEXPIRATIONDATE=@exp,
                         ISHAZARDOUS=@haz, UNNUMBER=@un, HAZARDCLASS=@hclass, PACKINGGROUP=@pgroup,
                         WEIGHT=@wgt, LENGTH=@len, WIDTH=@wid, HEIGHT=@hgt, VOLUME=@vol, 
+                        COMMODITYCODE=@code, COUNTRYOFORIGIN=@origin, VELOCITYCLASS=@vel, TI=@ti, HI=@hi,
+                        MINQTY=@min, MAXQTY=@max, PICKLOCATION=@pick,
                         STATUS=@status, LASTUPDATE=GETDATE(), LASTUSER=@user 
-                      WHERE SKU=@sku";
+                      WHERE ITEM=@id AND CUSTID=@cust";
         using var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@sku", item.SKU);
+        cmd.Parameters.AddWithValue("@id", item.Id);
+        cmd.Parameters.AddWithValue("@sku", (object?)item.SKU ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@desc", item.Description);
         cmd.Parameters.AddWithValue("@abbr", (object?)item.Abbreviation ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@uom", item.UnitOfMeasure);
+        cmd.Parameters.AddWithValue("@uom", item.BaseUOM);
         cmd.Parameters.AddWithValue("@grp", (object?)item.ItemGroupId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@cust", (object?)item.CustomerId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@rate", (object?)item.RateGroup ?? DBNull.Value);
@@ -124,29 +144,43 @@ public class SqlItemRepository : IItemRepository
         cmd.Parameters.AddWithValue("@wid", (object?)item.Width ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@hgt", (object?)item.Height ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@vol", (object?)item.Volume ?? DBNull.Value);
+        
+        cmd.Parameters.AddWithValue("@code", (object?)item.CommodityCode ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@origin", (object?)item.CountryOfOrigin ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@vel", (object?)item.VelocityClass ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@ti", (object?)item.Ti ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@hi", (object?)item.Hi ?? DBNull.Value);
+
+        cmd.Parameters.AddWithValue("@min", (object?)item.MinQty ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@max", (object?)item.MaxQty ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@pick", (object?)item.PickLocation ?? DBNull.Value);
+
         cmd.Parameters.AddWithValue("@status", item.Status);
-        cmd.Parameters.AddWithValue("@user", "SYSTEM");
+        cmd.Parameters.AddWithValue("@user", (object?)item.LastUser ?? "SYSTEM");
         int affected = await cmd.ExecuteNonQueryAsync();
         return affected > 0;
     }
 
-    public async Task<bool> DeleteAsync(string sku)
+    public async Task<bool> DeleteAsync(string id, string customerId, string user)
     {
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
-        var query = "UPDATE ITEM SET STATUS = 'I', LASTUPDATE = GETDATE() WHERE SKU = @sku";
+        var query = "UPDATE ITEM SET STATUS = 'I', LASTUPDATE = GETDATE(), LASTUSER = @user WHERE ITEM = @id AND CUSTID = @cust";
         using var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@sku", sku);
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@cust", customerId);
+        cmd.Parameters.AddWithValue("@user", user);
         int affected = await cmd.ExecuteNonQueryAsync();
         return affected > 0;
     }
 
     private Item MapItem(IDataRecord r) => new Item
     {
+        Id = r["ITEM"]?.ToString() ?? "",
         SKU = r["SKU"]?.ToString() ?? "",
         Description = r["DESCRIPTION"]?.ToString() ?? "",
         Abbreviation = r["ABBREVIATION"]?.ToString(),
-        UnitOfMeasure = r["UNITOFMEASURE"]?.ToString() ?? "EA",
+        BaseUOM = r["BASEUOM"]?.ToString() ?? "EA",
         ItemGroupId = r["ITEMGROUP"]?.ToString(),
         CustomerId = r["CUSTID"]?.ToString(),
         RateGroup = r["RATEGROUP"]?.ToString(),
@@ -169,6 +203,16 @@ public class SqlItemRepository : IItemRepository
         Width = r["WIDTH"] != DBNull.Value ? Convert.ToDecimal(r["WIDTH"]) : null,
         Height = r["HEIGHT"] != DBNull.Value ? Convert.ToDecimal(r["HEIGHT"]) : null,
         Volume = r["VOLUME"] != DBNull.Value ? Convert.ToDecimal(r["VOLUME"]) : null,
+        
+        CommodityCode = r["COMMODITYCODE"]?.ToString(),
+        CountryOfOrigin = r["COUNTRYOFORIGIN"]?.ToString(),
+        VelocityClass = r["VELOCITYCLASS"]?.ToString(),
+        Ti = r["TI"] != DBNull.Value ? Convert.ToInt32(r["TI"]) : null,
+        Hi = r["HI"] != DBNull.Value ? Convert.ToInt32(r["HI"]) : null,
+
+        MinQty = r["MINQTY"] != DBNull.Value ? Convert.ToInt32(r["MINQTY"]) : null,
+        MaxQty = r["MAXQTY"] != DBNull.Value ? Convert.ToInt32(r["MAXQTY"]) : null,
+        PickLocation = r["PICKLOCATION"]?.ToString(),
 
         Status = r["STATUS"]?.ToString() ?? "A",
         LastUpdate = r["LASTUPDATE"] != DBNull.Value ? Convert.ToDateTime(r["LASTUPDATE"]) : DateTime.Now,

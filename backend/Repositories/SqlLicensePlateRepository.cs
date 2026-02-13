@@ -221,13 +221,14 @@ public class SqlLicensePlateRepository : ILicensePlateRepository
         return facilities;
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id, string lastUser)
     {
         using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
-        string query = "UPDATE PLATE SET STATUS = 'X', LASTUPDATE = GETDATE() WHERE LPID = @id";
+        string query = "UPDATE PLATE SET STATUS = 'X', LASTUPDATE = GETDATE(), LASTUSER = @user WHERE LPID = @id";
         using var cmd = new SqlCommand(query, conn);
         cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@user", lastUser);
         int affected = await cmd.ExecuteNonQueryAsync();
         return affected > 0;
     }

@@ -17,7 +17,7 @@
     font-size: 1rem;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
-    background: var(--surface);
+    background: var(--input-bg);
     color: var(--text);
     outline: none;
     transition: all 0.2s;
@@ -50,7 +50,7 @@
     font-size: 1rem;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
-    background: var(--surface);
+    background: var(--input-bg);
     color: var(--text);
     outline: none;
     cursor: pointer;
