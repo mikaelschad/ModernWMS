@@ -233,6 +233,42 @@ public class SqlLicensePlateRepository : ILicensePlateRepository
         return affected > 0;
     }
 
+    public async Task<IEnumerable<PlateHistory>> GetHistoryAsync(string id)
+    {
+        var list = new List<PlateHistory>();
+        using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        string query = "SELECT * FROM PLATE_HISTORY WHERE LPID = @id ORDER BY ActionDate DESC";
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@id", id);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            list.Add(new PlateHistory
+            {
+                HistoryId = (Guid)reader["HistoryId"],
+                LPID = reader["LPID"].ToString()!,
+                ITEM = reader["ITEM"]?.ToString(),
+                CUSTID = reader["CUSTID"]?.ToString(),
+                FACILITY = reader["FACILITY"]?.ToString(),
+                LOCATION = reader["LOCATION"]?.ToString(),
+                STATUS = reader["STATUS"]?.ToString(),
+                QUANTITY = Convert.ToDecimal(reader["QUANTITY"]),
+                UNITOFMEASURE = reader["UNITOFMEASURE"]?.ToString(),
+                LOTNUMBER = reader["LOTNUMBER"]?.ToString(),
+                SERIALNUMBER = reader["SERIALNUMBER"]?.ToString(),
+                CREATIONDATE = reader["CREATIONDATE"] as DateTime?,
+                EXPIRATIONDATE = reader["EXPIRATIONDATE"] as DateTime?,
+                PurchaseOrder = reader["PO"]?.ToString(),
+                ParentLPID = reader["PARENTLPID"]?.ToString(),
+                Action = reader["Action"]?.ToString(),
+                ActionDate = (DateTime)reader["ActionDate"],
+                ActionBy = reader["ActionBy"]?.ToString()
+            });
+        }
+        return list;
+    }
+
     private LicensePlate MapPlate(IDataRecord reader)
     {
         return new LicensePlate

@@ -10,8 +10,11 @@ import PermissionGate from '../components/common/PermissionGate'
 import '../styles/master-data.css'
 import './Items.css'
 import ItemAliases from '../components/ItemAliases'
+import HistoryModal from '../components/HistoryModal'
 
 export default function Items() {
+    const [showHistory, setShowHistory] = useState(false)
+    const [historyId, setHistoryId] = useState(null)
     const { t } = useTranslation()
     const { hasPermission } = useAuth()
     const { success, error: showError } = useToast()
@@ -759,6 +762,14 @@ export default function Items() {
                                         >
                                             {hasPermission("ITEM_UPDATE") ? t('edit') : t('view')}
                                         </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => { setHistoryId(item.id); setShowHistory(true); }}
+                                            style={{ marginLeft: '5px' }}
+                                        >
+                                            {t('history')}
+                                        </Button>
                                         <PermissionGate permission="ITEM_UPDATE">
                                             <Button
                                                 size="sm"
@@ -775,6 +786,14 @@ export default function Items() {
                     </table>
                 </div>
             </GlassCard>
+
+            {showHistory && (
+                <HistoryModal
+                    type="item"
+                    id={historyId}
+                    onClose={() => { setShowHistory(false); setHistoryId(null); }}
+                />
+            )}
         </div >
     )
 }

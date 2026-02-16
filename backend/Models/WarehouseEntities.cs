@@ -68,3 +68,40 @@ public class InboundOrder
     public DateTime ExpectedDate { get; set; }
     public string Status { get; set; } = "Pending";
 }
+
+public class PlateHistory
+{
+    public Guid HistoryId { get; set; }
+    public string LPID { get; set; } = string.Empty;
+    public string? ITEM { get; set; }
+    public string? CUSTID { get; set; }
+    public string? FACILITY { get; set; }
+    public string? LOCATION { get; set; }
+    public string? STATUS { get; set; }
+    public decimal QUANTITY { get; set; }
+    public string? UNITOFMEASURE { get; set; }
+    public string? LOTNUMBER { get; set; }
+    public string? SERIALNUMBER { get; set; }
+    public DateTime? CREATIONDATE { get; set; }
+    public DateTime? EXPIRATIONDATE { get; set; }
+    public string? PurchaseOrder { get; set; }
+    public string? ParentLPID { get; set; }
+    public string? Action { get; set; }
+    public DateTime ActionDate { get; set; }
+    public string? ActionBy { get; set; }
+}
+
+public class ItemHistory
+{
+    public Guid HistoryId { get; set; }
+    public string ITEM { get; set; } = string.Empty;
+    public string? SKU { get; set; }
+    public string? DESCRIPTION { get; set; }
+    public string? ITEMGROUP { get; set; }
+    public string? BASEUOM { get; set; }
+    public string? STATUS { get; set; }
+    public string? CUSTID { get; set; }
+    public string? Action { get; set; }
+    public DateTime ActionDate { get; set; }
+    public string? ActionBy { get; set; }
+}

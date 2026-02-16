@@ -174,6 +174,35 @@ public class SqlItemRepository : IItemRepository
         return affected > 0;
     }
 
+    public async Task<IEnumerable<ItemHistory>> GetHistoryAsync(string id)
+    {
+        var list = new List<ItemHistory>();
+        using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        string query = "SELECT * FROM ITEM_HISTORY WHERE ITEM = @id ORDER BY ActionDate DESC";
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@id", id);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            list.Add(new ItemHistory
+            {
+                HistoryId = (Guid)reader["HistoryId"],
+                ITEM = reader["ITEM"].ToString()!,
+                SKU = reader["SKU"]?.ToString(),
+                DESCRIPTION = reader["DESCRIPTION"]?.ToString(),
+                ITEMGROUP = reader["ITEMGROUP"]?.ToString(),
+                BASEUOM = reader["BASEUOM"]?.ToString(),
+                STATUS = reader["STATUS"]?.ToString(),
+                CUSTID = reader["CUSTID"]?.ToString(),
+                Action = reader["Action"]?.ToString(),
+                ActionDate = (DateTime)reader["ActionDate"],
+                ActionBy = reader["ActionBy"]?.ToString()
+            });
+        }
+        return list;
+    }
+
     private Item MapItem(IDataRecord r) => new Item
     {
         Id = r["ITEM"]?.ToString() ?? "",

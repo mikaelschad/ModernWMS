@@ -23,7 +23,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    [RequirePermission("ITEM", "READ")]
+    [HasPermission("ITEM_READ")]
     public async Task<ActionResult<IEnumerable<Item>>> GetAll()
     {
         try
@@ -39,7 +39,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [RequirePermission("ITEM", "READ")]
+    [HasPermission("ITEM_READ")]
     public async Task<ActionResult<Item>> GetById(string id, [FromQuery] string customerId)
     {
         try
@@ -57,8 +57,24 @@ public class ItemController : ControllerBase
         }
     }
 
+    [HttpGet("{id}/history")]
+    [HasPermission("ITEM_READ")]
+    public async Task<ActionResult<IEnumerable<ItemHistory>>> GetHistory(string id)
+    {
+        try
+        {
+            var history = await _repository.GetHistoryAsync(id);
+            return Ok(history);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching history for item {Id}", id);
+            return StatusCode(500, ex.Message);
+        }
+    }
+
     [HttpPost]
-    [RequirePermission("ITEM", "CREATE")]
+    [HasPermission("ITEM_CREATE")]
     public async Task<ActionResult<Item>> Create([FromBody] Item item)
     {
         try
@@ -116,7 +132,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [RequirePermission("ITEM", "UPDATE")]
+    [HasPermission("ITEM_UPDATE")]
     public async Task<IActionResult> Update(string id, [FromBody] Item item)
     {
         try
@@ -137,7 +153,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [RequirePermission("ITEM", "DISABLE")]
+    [HasPermission("ITEM_DISABLE")]
     public async Task<IActionResult> Delete(string id, [FromQuery] string customerId)
     {
         try

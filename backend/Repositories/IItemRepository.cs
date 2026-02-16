@@ -7,4 +7,5 @@ public interface IItemRepository
     Task<string> CreateAsync(Item item);
     Task<bool> UpdateAsync(Item item);
     Task<bool> DeleteAsync(string id, string customerId, string user);
+    Task<IEnumerable<ItemHistory>> GetHistoryAsync(string id);
 }

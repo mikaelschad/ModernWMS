@@ -14,4 +14,5 @@ public interface ILicensePlateRepository
     Task<IEnumerable<string>> GetCustomersAsync(bool onlyActive = false);
     Task<IEnumerable<string>> GetFacilitiesAsync(bool onlyActive = false);
     Task<bool> DeleteAsync(string id, string lastUser);
+    Task<IEnumerable<PlateHistory>> GetHistoryAsync(string id);
 }

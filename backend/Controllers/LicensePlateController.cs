@@ -29,6 +29,13 @@ public class LicensePlateController : ControllerBase
         return plate;
     }
 
+    [HttpGet("{id}/history")]
+    [HasPermission("PLATE_READ")]
+    public async Task<ActionResult<IEnumerable<PlateHistory>>> GetHistory(string id)
+    {
+        return Ok(await _repository.GetHistoryAsync(id));
+    }
+
     [HttpGet("search")]
     [HasPermission("PLATE_READ")]
     public async Task<ActionResult<IEnumerable<LicensePlate>>> Search([FromQuery] PlateSearchCriteria criteria)

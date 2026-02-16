@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import { useFacility } from '../contexts/FacilityContext'
 import './PlateLookup.css' // Reusing existing styles for now

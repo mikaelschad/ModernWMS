@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import GlassCard from '../components/GlassCard'
 import LicensePlateForm from './LicensePlateForm'
+import HistoryModal from '../components/HistoryModal'
 import { useFacility } from '../contexts/FacilityContext'
 import PermissionGate from '../components/common/PermissionGate'
 import './PlateLookup.css'
@@ -39,6 +40,8 @@ const PlateLookup = () => {
   // CRUD State
   const [showForm, setShowForm] = useState(false)
   const [editingPlate, setEditingPlate] = useState(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyId, setHistoryId] = useState(null)
 
   // Sorting State
   const [sortColumn, setSortColumn] = useState(null)
@@ -157,6 +160,11 @@ const PlateLookup = () => {
   const handleEdit = (plate) => {
     setEditingPlate(plate)
     setShowForm(true)
+  }
+
+  const handleViewHistory = (id) => {
+    setHistoryId(id)
+    setShowHistory(true)
   }
 
   const handleDelete = async (id) => {
@@ -474,6 +482,13 @@ const PlateLookup = () => {
                       >
                         {t('view')}
                       </button>
+                      <button
+                        className="view-btn"
+                        onClick={() => handleViewHistory(plate.id)}
+                        style={{ marginLeft: '5px', backgroundColor: 'var(--secondary)' }}
+                      >
+                        {t('history')}
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -576,6 +591,14 @@ const PlateLookup = () => {
           plate={editingPlate}
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditingPlate(null); }}
+        />
+      )}
+
+      {showHistory && (
+        <HistoryModal
+          type="plate"
+          id={historyId}
+          onClose={() => { setShowHistory(false); setHistoryId(null); }}
         />
       )}
     </div>

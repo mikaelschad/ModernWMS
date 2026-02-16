@@ -195,6 +195,12 @@ public class LegacyOracleLicensePlateRepository : ILicensePlateRepository
         return affected > 0;
     }
 
+    public async Task<IEnumerable<PlateHistory>> GetHistoryAsync(string id)
+    {
+        // Placeholder for legacy Oracle integration
+        return await Task.FromResult(new List<PlateHistory>());
+    }
+
     private LicensePlate MapPlate(IDataRecord reader)
     {
         return new LicensePlate

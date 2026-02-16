@@ -122,7 +122,6 @@ const Roles = () => {
                                                         type="checkbox"
                                                         checked={rolePermissions.includes(p.id)}
                                                         onChange={() => handlePermissionToggle(p.id)}
-                                                        disabled={selectedRole.id === 'ADMIN'} // Optional: protect ADMIN
                                                     />
                                                     <span className="checkbox-custom"></span>
                                                     <div className="permission-info">
@@ -139,7 +138,7 @@ const Roles = () => {
                                 <Button
                                     className="save-btn"
                                     onClick={handleSave}
-                                    disabled={saving || selectedRole.id === 'ADMIN'}
+                                    disabled={saving}
                                     isLoading={saving}
                                 >
                                     {saving ? t('loading') : t('save_changes')}
