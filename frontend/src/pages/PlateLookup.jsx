@@ -6,6 +6,7 @@ import LicensePlateForm from './LicensePlateForm'
 import HistoryModal from '../components/HistoryModal'
 import { useFacility } from '../contexts/FacilityContext'
 import PermissionGate from '../components/common/PermissionGate'
+import Button from '../components/common/Button'
 import './PlateLookup.css'
 
 const PlateLookup = () => {
@@ -482,13 +483,14 @@ const PlateLookup = () => {
                       >
                         {t('view')}
                       </button>
-                      <button
-                        className="view-btn"
+                      <Button
+                        size="sm"
+                        variant="secondary"
                         onClick={() => handleViewHistory(plate.id)}
-                        style={{ marginLeft: '5px', backgroundColor: 'var(--secondary)' }}
+                        style={{ marginLeft: '5px' }}
                       >
                         {t('history')}
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
