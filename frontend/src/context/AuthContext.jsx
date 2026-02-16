@@ -10,6 +10,11 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
+    const completePasswordChange = () => {
+        localStorage.setItem('mustChangePassword', 'false');
+        setUser(prev => prev ? { ...prev, mustChangePassword: false } : null);
+    };
+
     // Configure axios default header
     useEffect(() => {
         if (token) {
@@ -27,11 +32,13 @@ export const AuthProvider = ({ children }) => {
 
                 // Load permissions from localStorage if available
                 const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
+                const mcp = localStorage.getItem('mustChangePassword') === 'true';
 
                 setUser({
                     username: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.unique_name || decoded.sub,
                     roles: roles,
-                    permissions: permissions
+                    permissions: permissions,
+                    mustChangePassword: mcp
                 });
             } catch (e) {
                 console.error("Invalid token", e);
@@ -56,13 +63,13 @@ export const AuthProvider = ({ children }) => {
             const { token, roles, permissions } = response.data;
             localStorage.setItem('token', token);
             localStorage.setItem('permissions', JSON.stringify(permissions || []));
+            // Store mustChangePassword flag
+            const mcp = response.data.mustChangePassword || false;
+            localStorage.setItem('mustChangePassword', String(mcp));
+
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setToken(token);
-            // Decode immediately or rely on effect? 
-            // Better to rely on effect or decode here too ensure consistent state.
-            // But verify response structure. AuthController returns { token, name, roles }.
-            // We can use that directly to avoid decode delay, but token is truth.
-            // Let's just setToken and let effect handle extracting user from token for consistency.
+            // We rely on effect to update user, but we should update localStorage first
             return true;
         } catch (error) {
             console.error('Login failed', error);
@@ -88,8 +95,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, loading, hasRole, hasPermission }}>
-            {!loading && children}
+        <AuthContext.Provider value={{ token, user, loading, login, logout, hasRole, hasPermission, completePasswordChange }}>
+            {children}
         </AuthContext.Provider>
     );
 };

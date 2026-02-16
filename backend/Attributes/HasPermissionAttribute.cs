@@ -22,12 +22,13 @@ namespace ModernWMS.Backend.Attributes
                 return;
             }
 
-            var permissions = context.HttpContext.Items["Permissions"] as List<string>;
-            if (permissions == null || !permissions.Contains(_permission))
+            if (user.HasClaim(c => c.Type == "permission" && c.Value == _permission))
             {
-                context.Result = new ForbidResult();
                 return;
             }
+
+            // Fallback for legacy or other auth mechanism if needed, but primarily JWT claims
+            context.Result = new ForbidResult();
         }
     }
 }

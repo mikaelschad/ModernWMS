@@ -27,11 +27,9 @@ namespace ModernWMS.Backend.Middleware
                     {
                         var accessibleFacilities = await GetUserFacilitiesAsync(userId);
                         var accessibleCustomers = await GetUserCustomersAsync(userId);
-                        var permissions = await GetUserPermissionsAsync(userId);
                         
                         context.Items["AccessibleFacilities"] = accessibleFacilities;
                         context.Items["AccessibleCustomers"] = accessibleCustomers;
-                        context.Items["Permissions"] = permissions;
                         context.Items["UserId"] = userId;
                     }
                     catch (Exception ex)
@@ -87,28 +85,6 @@ namespace ModernWMS.Backend.Middleware
             return customers;
         }
 
-        private async Task<List<string>> GetUserPermissionsAsync(string userId)
-        {
-            var permissions = new List<string>();
-            var connectionString = _configuration.GetConnectionString("LegacySqlDB");
 
-            using var conn = new SqlConnection(connectionString);
-            await conn.OpenAsync();
-
-            var query = @"SELECT DISTINCT rp.PERMISSIONID 
-                          FROM ROLE_PERMISSIONS rp
-                          JOIN USER_ROLES ur ON rp.ROLEID = ur.ROLEID
-                          WHERE ur.USERID = @uid";
-            using var cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@uid", userId);
-
-            using var rdr = await cmd.ExecuteReaderAsync();
-            while (await rdr.ReadAsync())
-            {
-                permissions.Add(rdr.GetString(0));
-            }
-
-            return permissions;
-        }
     }
 }

@@ -125,19 +125,38 @@ public class SqlUserRepository : IUserRepository
             while (await rdr.ReadAsync()) user.AccessibleCustomers.Add(rdr.GetString(0));
         }
 
-        // Load Permissions based on roles
+        // Load Permissions based on roles (Granular)
         if (user.Roles.Any())
         {
             var roleList = string.Join(",", user.Roles.Select((r, i) => $"@r{i}"));
-            var permQuery = $"SELECT DISTINCT PERMISSIONID FROM ROLE_PERMISSIONS WHERE ROLEID IN ({roleList})";
+            var permQuery = $"SELECT EntityType, CanRead, CanCreate, CanUpdate, CanDisable, CanPrint FROM ROLE_PERMISSIONS WHERE ROLEID IN ({roleList})";
             using (var cmdPerm = new SqlCommand(permQuery, conn))
             {
                 for (int i = 0; i < user.Roles.Count; i++)
                 {
                     cmdPerm.Parameters.AddWithValue($"@r{i}", user.Roles[i]);
                 }
-                using var rdr = await cmdPerm.ExecuteReaderAsync();
-                while (await rdr.ReadAsync()) user.Permissions.Add(rdr.GetString(0));
+                using (var rdr = await cmdPerm.ExecuteReaderAsync())
+                {
+                    var permissionSet = new HashSet<string>();
+                    while (await rdr.ReadAsync())
+                    {
+                        string entity = rdr.GetString(0);
+                        bool canRead = rdr.GetBoolean(1);
+                        bool canCreate = rdr.GetBoolean(2);
+                        bool canUpdate = rdr.GetBoolean(3);
+                        bool canDisable = rdr.GetBoolean(4);
+                        bool canPrint = rdr.GetBoolean(5);
+
+                        string upperEntity = entity.ToUpper();
+                        if (canRead) permissionSet.Add($"{upperEntity}_READ");
+                        if (canCreate) permissionSet.Add($"{upperEntity}_CREATE");
+                        if (canUpdate) permissionSet.Add($"{upperEntity}_UPDATE");
+                        if (canDisable) permissionSet.Add($"{upperEntity}_DISABLE");
+                        if (canPrint) permissionSet.Add($"{upperEntity}_PRINT");
+                    }
+                    user.Permissions.AddRange(permissionSet);
+                }
             }
         }
     }

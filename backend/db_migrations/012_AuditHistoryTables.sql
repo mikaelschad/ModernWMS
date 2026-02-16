@@ -1,0 +1,129 @@
+-- Drop existing history tables to ensure schema matches
+DROP TABLE IF EXISTS PLATE_HISTORY;
+DROP TABLE IF EXISTS ITEM_HISTORY;
+GO
+
+-- PLATE_HISTORY table
+CREATE TABLE PLATE_HISTORY (
+    HistoryId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    LPID NVARCHAR(50) NOT NULL,
+    ITEM NVARCHAR(50),
+    CUSTID NVARCHAR(50),
+    FACILITY NVARCHAR(50),
+    LOCATION NVARCHAR(50),
+    STATUS NVARCHAR(20),
+    QUANTITY DECIMAL(18,2),
+    UNITOFMEASURE NVARCHAR(20),
+    LOTNUMBER NVARCHAR(50),
+    SERIALNUMBER NVARCHAR(50),
+    CREATIONDATE DATETIME2,
+    EXPIRATIONDATE DATETIME2,
+    PO NVARCHAR(50),
+    PARENTLPID NVARCHAR(50),
+    Action NVARCHAR(10) NOT NULL, -- INSERT, UPDATE, DELETE
+    ActionDate DATETIME2 DEFAULT GETUTCDATE(),
+    ActionBy NVARCHAR(50)
+);
+
+CREATE INDEX IX_PLATE_HISTORY_LPID ON PLATE_HISTORY(LPID);
+CREATE INDEX IX_PLATE_HISTORY_ActionDate ON PLATE_HISTORY(ActionDate DESC);
+
+-- ITEM_HISTORY table
+CREATE TABLE ITEM_HISTORY (
+    HistoryId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    ITEM NVARCHAR(30) NOT NULL,
+    SKU NVARCHAR(50),
+    DESCRIPTION NVARCHAR(200),
+    ITEMGROUP NVARCHAR(50),
+    BASEUOM NVARCHAR(10),
+    STATUS NVARCHAR(1),
+    CUSTID NVARCHAR(30),
+    Action NVARCHAR(10) NOT NULL,
+    ActionDate DATETIME2 DEFAULT GETUTCDATE(),
+    ActionBy NVARCHAR(50)
+);
+
+CREATE INDEX IX_ITEM_HISTORY_ITEM ON ITEM_HISTORY(ITEM);
+CREATE INDEX IX_ITEM_HISTORY_ActionDate ON ITEM_HISTORY(ActionDate DESC);
+GO
+
+-- Trigger for PLATE
+CREATE OR ALTER TRIGGER TR_PLATE_History 
+ON PLATE 
+AFTER INSERT, UPDATE, DELETE
+AS BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @Action NVARCHAR(10);
+    DECLARE @ActionBy NVARCHAR(50);
+    
+    -- Determine Action
+    IF EXISTS(SELECT * FROM inserted) AND EXISTS(SELECT * FROM deleted)
+        SET @Action = 'UPDATE';
+    ELSE IF EXISTS(SELECT * FROM inserted)
+        SET @Action = 'INSERT';
+    ELSE
+        SET @Action = 'DELETE';
+
+    -- Determine User (Prioritize inserted.LASTUSER, then deleted.LASTUSER, then SYSTEM_USER)
+    SELECT TOP 1 @ActionBy = ISNULL(i.LASTUSER, ISNULL(d.LASTUSER, SYSTEM_USER))
+    FROM inserted i FULL JOIN deleted d ON i.LPID = d.LPID;
+
+    -- Handle Batch Operations by selecting from inserted/deleted sets
+    INSERT INTO PLATE_HISTORY (LPID, ITEM, CUSTID, FACILITY, LOCATION, STATUS, QUANTITY, UNITOFMEASURE, LOTNUMBER, SERIALNUMBER, CREATIONDATE, EXPIRATIONDATE, PO, PARENTLPID, Action, ActionDate, ActionBy)
+    SELECT 
+        COALESCE(i.LPID, d.LPID),
+        COALESCE(i.ITEM, d.ITEM),
+        COALESCE(i.CUSTID, d.CUSTID),
+        COALESCE(i.FACILITY, d.FACILITY),
+        COALESCE(i.LOCATION, d.LOCATION),
+        COALESCE(i.STATUS, d.STATUS),
+        COALESCE(i.QUANTITY, d.QUANTITY),
+        COALESCE(i.UNITOFMEASURE, d.UNITOFMEASURE),
+        COALESCE(i.LOTNUMBER, d.LOTNUMBER),
+        COALESCE(i.SERIALNUMBER, d.SERIALNUMBER),
+        COALESCE(i.CREATIONDATE, d.CREATIONDATE),
+        COALESCE(i.EXPIRATIONDATE, d.EXPIRATIONDATE),
+        COALESCE(i.PO, d.PO),
+        COALESCE(i.PARENTLPID, d.PARENTLPID),
+        @Action,
+        GETUTCDATE(),
+        ISNULL(i.LASTUSER, SYSTEM_USER) -- Use inserted user if available, else system user
+    FROM inserted i 
+    FULL OUTER JOIN deleted d ON i.LPID = d.LPID;
+END;
+GO
+
+-- Trigger for ITEM
+CREATE OR ALTER TRIGGER TR_ITEM_History 
+ON ITEM 
+AFTER INSERT, UPDATE, DELETE
+AS BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @Action NVARCHAR(10);
+    
+    IF EXISTS(SELECT * FROM inserted) AND EXISTS(SELECT * FROM deleted)
+        SET @Action = 'UPDATE';
+    ELSE IF EXISTS(SELECT * FROM inserted)
+        SET @Action = 'INSERT';
+    ELSE
+        SET @Action = 'DELETE';
+    
+    -- Corrected column names: ITEMGROUP instead of ItemGroupId, CUSTID instead of CustomerId
+    INSERT INTO ITEM_HISTORY (ITEM, SKU, DESCRIPTION, ITEMGROUP, BASEUOM, STATUS, CUSTID, Action, ActionDate, ActionBy)
+    SELECT 
+        COALESCE(i.ITEM, d.ITEM),
+        COALESCE(i.SKU, d.SKU),
+        COALESCE(i.DESCRIPTION, d.DESCRIPTION), -- Fixed Description casing to match SQL usually, relying on case-insensitivity but good to align
+        COALESCE(i.ITEMGROUP, d.ITEMGROUP),   -- Fixed: was ItemGroupId
+        COALESCE(i.BASEUOM, d.BASEUOM),       -- Fixed: casing
+        COALESCE(i.STATUS, d.STATUS),         -- Fixed: casing
+        COALESCE(i.CUSTID, d.CUSTID),         -- Fixed: was CustomerId
+        @Action, 
+        GETUTCDATE(), 
+        ISNULL(COALESCE(i.LASTUSER, d.LASTUSER), SYSTEM_USER) -- Fixed: casing and logic
+    FROM inserted i
+    FULL OUTER JOIN deleted d ON i.ITEM = d.ITEM;
+END;
+GO

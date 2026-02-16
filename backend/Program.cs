@@ -131,13 +131,19 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    // Production Security Settings
+    app.UseHttpsRedirection();
+    app.UseHsts();
+}
 
-// app.UseHttpsRedirection(); // Disabled for local development to avoid redirect issues
 app.UseCors("AllowFrontend");
 
 // Security Headers
@@ -147,6 +153,13 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    
+    // Strict-Transport-Security (HSTS) - Force HTTPS for 1 year
+    if (!app.Environment.IsDevelopment())
+    {
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    
     await next();
 });
 

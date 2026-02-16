@@ -108,7 +108,7 @@ const Navigation = () => {
                         </button>
                         <div className="dropdown-menu right-aligned">
                             <button className="dropdown-item" onClick={() => navigate('/change-password')}>
-                                {t('change_password')}
+                                {t('changePassword')}
                             </button>
                             <div className="dropdown-divider"></div>
                             <button className="dropdown-item logout-item" onClick={logout}>
